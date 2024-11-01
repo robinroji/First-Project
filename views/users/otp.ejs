@@ -1,0 +1,124 @@
+<%-include('../layouts/header') %>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .otp-container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    .otp-container h2 {
+        margin-bottom: 20px;
+    }
+    .otp-input {
+        width: 180px;
+        height: 40px;
+        text-align: center;
+        font-size: 18px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .submit-btn, .resend-btn {
+        padding: 10px 20px;
+        margin: 10px 0;
+        background-color: #007BFF;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .submit-btn:hover, .resend-btn:hover {
+        background-color: #0056b3;
+    }
+    .resend-link {
+        color: #007BFF;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+        margin-top: 15px;
+        display: inline-block;
+    }
+    .resend-link:hover {
+        text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+  <div class="otp-container">
+      <img src="/Important/Armor Edge Logo.webp" style="width: 100px; height: 100px;" alt="Logo">
+  
+      <h2>OTP Verification</h2>
+      <form id="otpForm" action="/verify-otp" method="post" onsubmit="return validateOTP()">
+          <input type="hidden" name="id" value="<%= userId %>">
+  
+          <input type="text" class="otp-input" maxlength="6" name="otp" placeholder="Enter OTP" >
+          <span id="otp_error" style="color:red;font-size:14px;"></span>
+          
+          <br>
+          <button type="submit" class="submit-btn">Verify</button>
+      </form>
+  
+      <form action="/resend-otp" method="post">
+          <input type="hidden" name="id" value="<%= userId %>">
+          <button id="resendButton" type="submit" class="resend-btn">Resend OTP</button>
+      </form>
+      <p>Resend OTP in <span id="timer">20 seconds</span></p>
+      <% if (typeof message !== 'undefined') { %>
+        <p style="color:green;"><%= message %></p>
+    <% } %>
+  </div>
+  
+  <script>
+      function validateOTP() {
+          document.getElementById("otp_error").textContent = "";
+  
+          var otp = document.querySelector("input[name='otp']").value.trim();
+  
+          if (otp.length !== 6) {
+              document.getElementById("otp_error").textContent = "OTP must be 6 digits long.";
+              return false;
+          }
+  
+          if (!/^\d+$/.test(otp)) {
+              document.getElementById("otp_error").textContent = "OTP must contain only numbers.";
+              return false;
+          }
+  
+          return true;
+      }
+  
+      window.onload = function () {
+          var timerDisplay = document.getElementById('timer');
+          var resendButton = document.getElementById('resendButton');
+          resendButton.disabled = true;
+          var timer = 20;
+  
+          var interval = setInterval(function () {
+              timer--;
+              timerDisplay.textContent = timer + " seconds";
+  
+              if (timer <= 0) {
+                  clearInterval(interval);
+                  resendButton.disabled = false;
+                  timerDisplay.textContent = "You can resend the OTP now.";
+              }
+          }, 1000);
+      };
+  </script>
+  </body>
+  </html>
+<%-include('../layouts/footer') %>
+
+

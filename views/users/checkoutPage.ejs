@@ -1,0 +1,180 @@
+
+<%- include("../layouts/user_header.ejs") %>
+
+<link rel="stylesheet" href="/css/style.css"> <!-- Link to your CSS file -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
+    .checkout-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+        background-color: white;
+    }
+    .checkout-details {
+        width: 65%;
+    }
+    .order-summary {
+        width: 30%;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+    }
+    .order-summary h4, .order-summary p {
+        margin: 0;
+        padding: 5px 0;
+    }
+    .checkout-header {
+        display: flex;
+        align-items: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .checkout-header img {
+        width: 80px;
+        margin-right: 20px;
+        border-radius: 8px;
+    }
+    .delivery-address, .payment-method {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+    }
+    .delivery-address h4, .payment-method h4 {
+        margin-bottom: 10px;
+    }
+    .address-card {
+        background-color: #fff;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .change-address-btn, .place-order-btn {
+        display: block;
+        width: 100%;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+    }
+    .change-address-btn:hover, .place-order-btn:hover {
+        background-color: #0056b3;
+    }
+    .place-order-btn {
+        background-color: green;
+    }
+    .place-order-btn:hover {
+        background-color: #45a049;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        margin: 10px 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="checkout-container">
+    <!-- Left Section (Checkout Details) -->
+    <div class="checkout-details">
+        <h2>CHECKOUT</h2>
+
+        <!-- Delivery Address -->
+        <div class="delivery-address">
+            <h3>Delivery Address</h3>
+            <ul>
+            <% userAddress.forEach((item) => { %>
+
+                <form action="/placeOrder "  method="post">
+
+                    <input class="radio-btn" type="radio" name="addressId" value="<% item._id %>">
+                    <p><strong>House Name:</strong> <%= item.houseName %></p>
+                <p><strong>Pin Code:</strong> <%= item.pinCode %></p>
+                <p><strong>PO:</strong> <%= item.po %></p>
+                <p><strong>Location:</strong> <%= item.location %></p>
+                <p><strong>State:</strong> <%= item.state %></p>    </li>
+
+                
+                    <button class="edit-btn" onclick="event.preventDefault(); window.location.href='/edit_editAddress/<%=item._id%> '">Edit</button>
+
+            <% }) %>
+                </form>
+        </ul>
+        </div>
+
+        <!-- Product Info -->
+        <div class="checkout-header">
+            <div>
+                <% cart.items.forEach((item) => { %>
+                   
+
+
+                    <div class="card mb-1">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-md-2">
+                                <img src="/newfile/<%= item.product.product_image[0] %>" class="img-fluid rounded-start" alt="Product Image">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-1"><%= item.product.product_name %></h6>
+                                    <p class="mb-2 fw-bold">₹<%= item.product.product_sale_price %></p>
+                                    <p> Quantity: <%= item.quantity %> </p>
+                                    <p class="card-text mt-1 mb-0">Brand : <%= item.product.product_brand %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                <% }); %>
+                <p><strong><%= cart.items.length %> Items</strong></p>
+            </div>
+            
+        </div>
+
+        <!-- Payment Method -->
+        <div class="payment-method">
+            <h3>Payment Method</h3>
+            <ul>
+                <li><input type="radio" name="payment" value="COD"> Cash On Delivery</li>
+              
+            </ul>
+        </div>
+    </div>
+
+    <!-- Right Section (Order Summary) -->
+    <div class="order-summary">
+        <h4>Order Summary</h4>
+        <% cart.items.forEach((item) => { %> 
+            <p><%= item.product.name %>  Price : ₹<%= item.product.product_sale_price %></p>
+        <% }); %>
+
+        <hr>
+        <h4>Total Amount: ₹<%= cart.totalSalesPrice %></h4>
+        <form action="/placeOrder" method="post">
+            <button class="place-order-btn">Place Order</button>
+
+        </form>
+    </div>
+</div>
+</form>
+</body>
+</html>
+
+<%- include("../layouts/user_footer.ejs") %>
+

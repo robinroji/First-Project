@@ -1,0 +1,269 @@
+<%- include('../layouts/admin_header.ejs') %>
+<section class="content-main">
+    <div class="content-header">
+        <h2 class="content-title">Edit Product: </h2>
+        <div>
+            <a href="" class="btn btn-outline-primary"><i class="fas fa-list"></i> Product List</a>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="productForm" action="/product/edit_product/<%= product._id %>" method="post" enctype="multipart/form-data">
+               <input type="hidden" name="id" value="<%= product._id %>">
+                <div class="mb-3">
+                    <label for="productName" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" name="pro_name" placeholder="<%= product.product_name %>" value="<%= product.product_name %>">
+                </div>
+
+
+                <div class="mb-3">
+                    <label for="productBrand" class="form-label">Product Brand</label>
+                    <input type="text" class="form-control" name="pro_brand" placeholder="<%= product.product_brand %>" value="<%= product.product_brand %>">
+                </div>
+                <div class="mb-3">
+                    <label for="" class="form-label">Product Description</label>
+                    <textarea class="form-control" name="pro_description" rows="3" placeholder="<%= product.product_description %>"><%= product.product_description %></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select name="pro_category" id="" class="form-control">
+                            <% category.forEach(cat =>{ %>
+                            <option value='<%= cat._id %>'><%= cat.name %></option>
+                            <% }) %>
+                   </select>
+                </div>
+                
+                
+                <div class="mb-3">
+                    <label for="" class="form-label">Price</label>
+                    <input type="text" class="form-control" name="pro_reg_price" placeholder="<%= product.product_regular_price %>" value="<%= product.product_regular_price %>">
+                </div>
+                <div class="mb-3">
+                    <label for="units" class="form-label">Quantity</label>
+                    <input type="text" class="form-control" name="pro_quantity" placeholder="<%= product.product_quantity %>" value="<%= product.product_quantity %>">
+                </div>
+                <div class="mb-3">
+                    <label for="" class="form-label">Offer Price</label>
+                    <input type="text" class="form-control" name="pro_sale_price" placeholder="<%= product.product_sale_price %>" value="<%= product.product_sale_price %>">
+                </div>
+                <div class="mb-3">
+                    <label for="" class="form-label">Existing Images</label>
+                    <div id="existingImages" class="image-list d-flex flex-wrap">
+                        <% product.product_image.forEach((img, index) => { %>
+                            <div class="image-item position-relative">
+                                <img src="/newfile/<%= img %>" alt="Existing image" class="mt-2" style="max-width: 200px;">
+                                
+                                <a onclick="removeImage(event,'<%= product._id %>','<%= img %>')" class="btn btn-danger">Remove</a>
+                            </div>
+                        <% }) %>
+                    </div> 
+                </div>
+                <div class="mb-3">
+                    <label for="productImages" class="form-label">Add New Images (Max 3 total)</label>
+                    <input type="file" class="form-control" id="productImages" name="pro_images" multiple onchange="handleFileInput()">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="imagePreview" class="form-label">New Images Preview</label>
+                    <div id="imagePreview" class="d-flex flex-wrap">
+                        <!-- Preview images will be shown here -->
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Update Product</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+   async function removeImage(event,product_id,img){
+    console.log('clickreed')
+    event.preventDefault()
+    event.stopPropagation()
+
+try {
+    Swal.fire({
+    title: 'Loading...',
+    text: 'Please wait while we process your request.',
+    allowOutsideClick: false, // Prevent closing on outside click
+    didOpen: () => {
+        Swal.showLoading();
+    }
+});
+    const response = await fetch('/product/img_delete',{
+        method:'DELETE',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({product_id,img})
+    })
+
+    if(!response.ok) throw new Error('Response error')
+
+     const data = await response.json()
+ 
+     if(!data.success) throw new Error(data.message||'Image deletion error')
+    Swal.close();
+    window.location.reload()
+    
+
+} catch (error) {
+    Swal.close();
+    console.log(error)
+}
+
+
+}
+</script>
+
+<script>
+let addedFiles = []; // Array to store the added files
+
+function handleFileInput() {
+    const fileInput = document.getElementById('productImages');
+    const preview = document.getElementById('imagePreview');
+    const files = fileInput.files;
+
+    // Check if new images plus existing images exceed the limit
+    if (files.length > 0 && addedFiles.length + files.length > 3) {
+        alert('You can only add up to 3 total images.');
+        fileInput.value = ''; // Clear the file input
+        return;
+    }
+
+    preview.innerHTML = ''; // Clear previous previews
+
+    // Update addedFiles array with new files
+    addedFiles = Array.from(files);
+
+    for (const file of files) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgDiv = document.createElement('div');
+            imgDiv.classList.add('image-preview', 'position-relative');
+            imgDiv.style.marginRight = '10px';
+            imgDiv.style.marginBottom = '10px';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.maxWidth = '200px';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'position-absolute');
+            removeBtn.style.top = '5px';
+            removeBtn.style.right = '5px';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = function() {
+                imgDiv.remove();
+                removeFileFromInput(file);
+                updateFileInputValidation();
+            };
+
+            imgDiv.appendChild(img);
+            imgDiv.appendChild(removeBtn);
+            preview.appendChild(imgDiv);
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    updateFileInputValidation();
+}
+
+function removeFileFromInput(file) {
+    // Create a new FileList object without the removed file
+    const dataTransfer = new DataTransfer();
+    addedFiles.forEach(f => {
+        if (f !== file) {
+            dataTransfer.items.add(f);
+        }
+    });
+    document.getElementById('productImages').files = dataTransfer.files;
+    addedFiles = Array.from(dataTransfer.files);
+}
+
+function updateFileInputValidation() {
+    const totalImages = document.getElementById('imagePreview').children.length;
+    const fileInput = document.getElementById('productImages');
+    
+    if (totalImages >= 3) {
+        fileInput.disabled = true;
+    } else {
+        fileInput.disabled = false;
+    }
+}
+
+// Initial validation setup on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateFileInputValidation();
+});
+</script>
+
+<style>
+    body {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+    .card {
+        background-color: #1e1e1e;
+    }
+    .form-control, .form-select {
+        background-color: #2c2c2c;
+        color: #e0e0e0;
+        border-color: #444;
+    }
+    .btn-primary {
+        background-color: #bb86fc;
+        border-color: #bb86fc;
+        color: #121212;
+    }
+    .btn-primary:hover {
+        background-color: #a370f7;
+        border-color: #a370f7;
+    }
+    .btn-outline-primary {
+        color: #bb86fc;
+        border-color: #bb86fc;
+    }
+    .btn-outline-primary:hover {
+        background-color: #bb86fc;
+        color: #121212;
+    }
+    .btn-danger {
+        background-color: #cf6679;
+        border-color: #cf6679;
+    }
+    .btn-danger:hover {
+        background-color: #b00020;
+        border-color: #b00020;
+    }
+    .form-check-input:checked {
+        background-color: #bb86fc;
+        border-color: #bb86fc;
+    }
+    .image-list {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .image-item {
+        display: flex;
+        align-items: center;
+        position: relative;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+    .image-preview {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .image-preview img {
+        margin-right: 10px;
+    }
+    .image-preview button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+</style>
+<%- include('../layouts/admin_footer.ejs') %>

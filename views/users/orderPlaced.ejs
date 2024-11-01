@@ -1,0 +1,64 @@
+<%- include("../layouts/user_header.ejs") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Link to your CSS file -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .confirmation-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .confirmation-box {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .confirmation-box h1 {
+            color: green;
+            font-size: 36px;
+        }
+        .confirmation-box p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .confirmation-box a {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .confirmation-box a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="confirmation-container">
+    <div class="confirmation-box">
+        <h1>Order Placed Successfully!</h1>
+        <p>Thank you for your purchase. Your order has been successfully placed.</p>
+
+        <a href="/">Back to Home</a>
+    </div>
+</div>
+
+</body>
+</html>
+
+<%- include("../layouts/user_footer.ejs") %>

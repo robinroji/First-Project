@@ -1,0 +1,82 @@
+<%- include('../layouts/admin_header.ejs') %>
+<section class="content-main">
+    <div class="content-header">
+        <h2 class="content-title">Users list</h2>
+        
+    </div>
+    <div class="card mb-4">
+        <header class="card-header">
+            <div class="row gx-3">
+                <div class="col-lg-4 col-md-6 me-auto">
+                    <input type="text" placeholder="Search..." class="form-control">
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                  
+                </div>
+               
+            </div>
+        </header> 
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Sl number</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       <% user.forEach((user,index)=>{ %>
+                       <tr>
+                        <td> <%= index +1 %></td>
+                       
+                        <td><%= user.firstname %></td>
+                        
+                        <td><%= user.email %></td>
+                        
+
+                        <td>
+                           <% if(user.block){ %>
+                            <span class="badge rounded-pill alert-danger"> Inactive </span>
+                            <% } %>
+                            <% if(user.block == false){ %>
+                            <span class="badge rounded-pill alert-success"> Active</span>
+                            <% } %>
+                            
+                            
+                        <td class="text-end">                                
+                            <form <% if(user.block) {%> action="/admin/customer/unblock/<%= user._id %>" <% } %>
+                                <% if(!user.block) {%> action="/admin/customer/block/<%= user._id %>" <% } %> 
+                                method="post" <% if(!user.block) {%>onsubmit="return confirm('Are you sure you want to block this user?');"<% } %>
+                                <%if(user.block) {%> onsubmit="return confirm('Are you sure you want to restore this user?')"<% } %>>
+                                
+                                <button type="submit" class="btn btn-sm <% if(!user.block) {%> btn-danger<% } %> <% if(user.block) {%> btn-success<% } %> rounded font-sm mt-15">
+                                   <% if(user.block) {%>Restore<% } %><% if(!user.block) {%>Block<% } %>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% }) %>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div> <!-- card-body end// -->
+    </div> <!-- card end// -->
+    <div class="pagination-area mt-15 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                <li class="page-item"><a class="page-link" href="#">02</a></li>
+                <li class="page-item"><a class="page-link" href="#">03</a></li>
+                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                <li class="page-item"><a class="page-link" href="#">16</a></li>
+                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+            </ul>
+        </nav>
+    </div>
+</section> <!-- content-main end// -->
+<%- include('../layouts/admin_footer.ejs') %>

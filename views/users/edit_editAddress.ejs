@@ -1,0 +1,45 @@
+<%- include("../layouts/user_header.ejs") %>
+
+<div class="container">
+    <h2>Edit Address</h2>
+
+    <form action="/edit_address" method="POST">
+        <!-- Hidden input to pass the address ID -->
+        <input type="hidden" name="addressId" value="<%= address._id %>">
+
+        <!-- House Name -->
+        <div class="form-group">
+            <label for="houseName">House Name:</label>
+            <input type="text" id="houseName" name="houseName" value="<%= address.houseName %>" class="form-control" required>
+        </div>
+
+        <!-- Pin Code -->
+        <div class="form-group">
+            <label for="pinCode">Pin Code:</label>
+            <input type="text" id="pinCode" name="pinCode" value="<%= address.pinCode %>" class="form-control" required>
+        </div>
+
+        <!-- PO -->
+        <div class="form-group">
+            <label for="po">PO:</label>
+            <input type="text" id="po" name="po" value="<%= address.po %>" class="form-control" required>
+        </div>
+
+        <!-- Location -->
+        <div class="form-group">
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" value="<%= address.location %>" class="form-control" required>
+        </div>
+
+        <!-- State -->
+        <div class="form-group">
+            <label for="state">State:</label>
+            <input type="text" id="state" name="state" value="<%= address.state %>" class="form-control" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Update Address</button>
+    </form>
+</div>
+
+<%- include("../layouts/user_footer.ejs") %>
