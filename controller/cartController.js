@@ -1,6 +1,7 @@
 const Cart = require('../model/cartModel');
 const User = require('../model/userModel')
 const Product = require('../model/productModel')
+const Coupen = require('../model/coupenModel')
 
 
 // const calculateCartTotals = (cart) => {
@@ -32,7 +33,7 @@ const cart_Page = async(req,res)=>{
         }
 
         // console.log('the cart is ',cart.items[0].totalPrice) 
-       
+    
         
         
         res.render('cartPage',{userCart:cart});
@@ -57,7 +58,7 @@ const move_to_cart = async(req,res)=>{
     try { 
         const user = await User.findOne({_id:req.session.user_id}) 
 
-
+        console.log('the id from params is',req.params.id)
         // console.log('the user 1',user)
          
          

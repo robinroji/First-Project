@@ -2,6 +2,7 @@ const User = require('../model/userModel');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const Order = require('../model/orderModel')
+const Coupen = require('../model/coupenModel')
 
 //************** ADMIN  GET LOGIN  *************/
 
@@ -49,7 +50,7 @@ const login = async (req,res)=>{
 
                     {
 
-                    req.session.admin = true;
+                    req.session.admin = admin._id;
                     return res.render('admin_Dashboard')
                 }else{
                     console.log('admin password is not matching ');
@@ -167,6 +168,137 @@ const updateStatus = async(req,res)=>{
     }
 }
 
+//*********   Create Coupen  *****/
+
+const getCoupen = async(req,res)=>{
+    try {
+
+        console.log('create coupen page entered')
+        const coupens = await Coupen.find({isActive:true})
+        console.log('coupens are',coupens)
+        res.render('coupen',{coupens})
+        
+    } catch (error) {
+        console.log(error.message)
+        return res.redirect('/errorPage')
+        
+    }
+}
+
+//************  add_Coupen  *************** */
+
+const add_Coupen = async(req,res)=>{
+    try {
+        const admin = await User.findById(req.session.admin)
+
+        const coupen = new Coupen({
+
+            code:req.body.couponCode,
+            discountPercentage:req.body.discount,
+            expiryDate:req.body.expiryDate,
+            minimumPurchaseAmount:req.body.minOrderValue,
+            usedBy:admin
+
+
+        })
+
+        coupen.save()
+        return res.redirect('/admin/coupen')
+        
+    } catch (error) {
+        console.log(error.message);
+        res.redirect('/errorPage')
+        
+        
+    }
+}
+
+//****   Load Add coupen  ******/
+
+const load_add_Coupen = async(req,res)=>{
+    try {
+        res.render('addCoupen')
+    } catch (error) {
+        console.log(error.message);
+        return res.redirect('/errorPage')
+        
+        
+    }
+}
+
+//*********  load_edit_Coupen ******** */
+
+const load_edit_Coupen = async(req,res)=>{
+    try {
+        const coupens = await Coupen.findById(req.params.id)
+
+        console.log('load edit ******************************************9999')
+        
+        res.render('edit_Coupen',{coupens})
+    } catch (error) {
+        console.log(error.message)
+        return res.redirect('/errorPage')
+        
+    }
+}
+
+
+//****************    edit_Coupen    *********************/
+
+const edit_Coupen = async(req,res)=>{
+
+    try {
+        console.log('edit page entered ')
+        const update = await Coupen.findByIdAndUpdate(req.params.id,{
+            code:req.body.code,
+            discountPercentage:req.body.discountPercentage,
+            expiryDate:req.body.expiryDate,
+            minimumPurchaseAmount:req.body.minimumPurchaseAmount,
+        },
+             {new:true}
+    )
+        return res.redirect('/admin/coupen')
+    } catch (error) {
+        console.log(error.message)
+        return res.redirect('/errorPage')
+        
+    }
+}
+
+
+//******** delete_Coupen */
+
+const delete_Coupen = async(req,res)=>{
+    try {
+        console.log('the id is ',req.params.id)
+        const coupenId= await Coupen.findByIdAndDelete(req.params.id)
+        return res.redirect('/admin/coupen')
+        
+    } catch (error) {
+        console.log('error found heere in the delete coupen')
+        console.log(error.messsage)
+        return res.redirect('/errorPage')
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports ={
     loadLogin,
     login,
@@ -175,5 +307,12 @@ module.exports ={
     loadOrderList,
     editOrder,
     deleteOrder,
-    updateStatus
+    updateStatus,
+    getCoupen,
+    add_Coupen,
+    load_add_Coupen,
+    load_edit_Coupen,
+    edit_Coupen,
+    delete_Coupen
+
 }

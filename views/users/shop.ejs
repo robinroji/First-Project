@@ -1,7 +1,14 @@
 <%- include("../layouts/user_header.ejs") %>
 
+
+
+
 <section class="product-tabs pt-25 pb-20 wow fadeIn animated">
     <div class="container">
+       
+       
+      
+            
         <div class="row">
             <!-- Filter Section (Right Side) -->
             <div class="col-lg-3 col-md-4 col-12 order-lg-last filter-category-wrapper">
@@ -71,7 +78,7 @@
                                 </div>
                                 <div class="product-action-1">
                                     <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-eye"></i></a>
-                                    <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/"><i class="fi-rs-heart"></i></a>
+                                    <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/move_to_wishList/<%=product._id %>"><i class="fi-rs-heart"></i></a>
                                     <a aria-label="Compare" class="action-btn hover-up" href="/"><i class="fi-rs-shuffle"></i></a>
                                 </div>
                             </div>
@@ -101,9 +108,9 @@
             </div>
         </div>
     </div>
+   
 </section>
 
-<%- include("../layouts/user_footer.ejs") %>
 
 <!-- JavaScript to Filter Products -->
 <script>
@@ -121,6 +128,7 @@
         });
     }
 </script>
+
 
 <style>
     .filter-category-wrapper {

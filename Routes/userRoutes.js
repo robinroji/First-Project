@@ -119,12 +119,26 @@ user_route.post('/select_address/:id',userController.select_address)
 user_route.post('/payment/:id',userController.payment)
 
 //***** Order ****/
-user_route.post('/placeOrder',userController.placeOrder)
+user_route.post('/placeOrder',auth.isLogin,userController.placeOrder)
 user_route.get('/orders',auth.isLogin,userController.loadOrders)
 user_route.get("/Order_DetailPage/:id",userController.OrderDetailPage)
 user_route.post('/updateOrder/:id',userController.updateOrder)
 user_route.post('/deleteOrder/:id',userController.deleteOrder)
+user_route.get('/orderPlaced',userController.orderPlaced)
 
+//***** WishList *********/
+user_route.get('/wishList',auth.isLogin,userController.loadWishList)
+user_route.get('/move_to_wishList/:id',auth.isLogin,userController.wishlist)
+user_route.post('/remove_product/:id',userController.remove_product)
+
+//***  Payment ************/
+user_route.post('/razorPay',auth.isLogin,userController.razorPayment)
+user_route.post('/verify_razorPay',auth.isLogin,userController.verify_razorPay)
+
+//** Coupen ********/
+user_route.post('/select_Coupen',userController.selectCoupen)
+user_route.post('/applyCoupen',userController.applyCoupen)
+user_route.post('/returnAmount',userController.returnAmount)
 
 
 

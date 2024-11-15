@@ -1,180 +1,451 @@
-
 <%- include("../layouts/user_header.ejs") %>
 
-<link rel="stylesheet" href="/css/style.css"> <!-- Link to your CSS file -->
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
-    }
-    .checkout-container {
-        display: flex;
-        justify-content: space-between;
-        padding: 20px;
-        background-color: white;
-    }
-    .checkout-details {
-        width: 65%;
-    }
-    .order-summary {
-        width: 30%;
-        border: 1px solid #e0e0e0;
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 10px;
-    }
-    .order-summary h4, .order-summary p {
-        margin: 0;
-        padding: 5px 0;
-    }
-    .checkout-header {
-        display: flex;
-        align-items: center;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    .checkout-header img {
-        width: 80px;
-        margin-right: 20px;
-        border-radius: 8px;
-    }
-    .delivery-address, .payment-method {
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: #f9f9f9;
-        border-radius: 10px;
-    }
-    .delivery-address h4, .payment-method h4 {
-        margin-bottom: 10px;
-    }
-    .address-card {
-        background-color: #fff;
-        padding: 10px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        margin-bottom: 15px;
-    }
-    .change-address-btn, .place-order-btn {
-        display: block;
-        width: 100%;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        text-align: center;
-    }
-    .change-address-btn:hover, .place-order-btn:hover {
-        background-color: #0056b3;
-    }
-    .place-order-btn {
-        background-color: green;
-    }
-    .place-order-btn:hover {
-        background-color: #45a049;
-    }
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-    li {
-        margin: 10px 0;
-    }
-</style>
+<head>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .checkout-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: white;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .checkout-details {
+            width: 65%;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0; /* Optional: add a border for separation */
+        }
+        .order-summary-container {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px; /* Added padding */
+        }
+        /* Payment Method and Order Summary Styles */
+        .payment-method, .order-summary {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .payment-method h3, .order-summary h4 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .payment-method ul, .delivery-address ul {
+            list-style: none;
+            padding: 0;
+        }
+        .payment-method li, .delivery-address li {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0; /* Adjusted padding for uniformity */
+        }
+        .order-summary hr {
+            border: 0;
+            border-top: 1px solid #e0e0e0;
+            margin: 15px 0;
+        }
+        .order-summary p {
+            font-size: 0.9rem;
+            margin: 5px 0;
+            color: #555;
+        }
+        .total-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .place-order-btn {
+            display: block;
+            width: 100%;
+            background-color: green;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .place-order-btn:hover {
+            background-color: #45a049;
+        }
+        /* Product Card Styles */
+        .product-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .product-image img {
+            width: 100%;
+            max-width: 80px;
+            border-radius: 8px;
+        }
+        .product-details {
+            flex: 1;
+        }
+        .product-details h6 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .product-details p {
+            margin: 4px 0;
+        }
+        /* Order Items and Total */
+        .order-items-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .total-items {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        /* Address and Payment Item Styles */
+        .radio-btn {
+            width: 16px; /* Smaller size */
+            height: 16px;
+            accent-color: #333; /* Optional color */
+        }
+        .small-radio {
+    width: 15px;
+    height: 15px;
+}
+
+    </style>
 </head>
+
 <body>
+    <div class="checkout-container">
+        <!-- Left Section (Checkout Details) -->
+        <div class="checkout-details">
+            <h2>CHECKOUT</h2>
+            <br>
+            <!-- Product Info (Ordered Items) -->
+            <div class="checkout-header">
+                <h3 class="order-items-header">Order Items</h3>
+                <form action="/placeOrder" id="orderForm" method="post">
 
-<div class="checkout-container">
-    <!-- Left Section (Checkout Details) -->
-    <div class="checkout-details">
-        <h2>CHECKOUT</h2>
-
-        <!-- Delivery Address -->
-        <div class="delivery-address">
-            <h3>Delivery Address</h3>
-            <ul>
-            <% userAddress.forEach((item) => { %>
-
-                <form action="/placeOrder "  method="post">
-
-                    <input class="radio-btn" type="radio" name="addressId" value="<% item._id %>">
-                    <p><strong>House Name:</strong> <%= item.houseName %></p>
-                <p><strong>Pin Code:</strong> <%= item.pinCode %></p>
-                <p><strong>PO:</strong> <%= item.po %></p>
-                <p><strong>Location:</strong> <%= item.location %></p>
-                <p><strong>State:</strong> <%= item.state %></p>    </li>
-
-                
-                    <button class="edit-btn" onclick="event.preventDefault(); window.location.href='/edit_editAddress/<%=item._id%> '">Edit</button>
-
-            <% }) %>
+                    <input type="hidden" name="cartId" value="<%= cart._id %>">
+                    <input type="hidden" id="selectedPaymentMethods" name="paymentMethod" value="">
+                    <input type="hidden" id="selectedAddressId" name="addressId" value="">
+                    <input type="hidden" name="paymentId" id="razorpayId" value="">
                 </form>
-        </ul>
-        </div>
-
-        <!-- Product Info -->
-        <div class="checkout-header">
-            <div>
                 <% cart.items.forEach((item) => { %>
-                   
-
-
-                    <div class="card mb-1">
-                        <div class="row g-0 align-items-center">
-                            <div class="col-md-2">
-                                <img src="/newfile/<%= item.product.product_image[0] %>" class="img-fluid rounded-start" alt="Product Image">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h6 class="card-title mb-1"><%= item.product.product_name %></h6>
-                                    <p class="mb-2 fw-bold">₹<%= item.product.product_sale_price %></p>
-                                    <p> Quantity: <%= item.quantity %> </p>
-                                    <p class="card-text mt-1 mb-0">Brand : <%= item.product.product_brand %></p>
-                                </div>
-                            </div>
+                    <div class="product-card">
+                        <!-- Product Image -->
+                        <div class="product-image">
+                            <img src="/newfile/<%= item.product.product_image[0] %>" alt="Product Image">
+                        </div>
+                        <!-- Product Details -->
+                        <div class="product-details">
+                            <h6><%= item.product.product_name %></h6>
+                            <p>₹<%= item.product.product_sale_price %></p>
+                            <p>Quantity: <%= item.quantity %></p>
+                            <p>Brand: <%= item.product.product_brand %></p>
                         </div>
                     </div>
-
-
-
-
-
                 <% }); %>
-                <p><strong><%= cart.items.length %> Items</strong></p>
+                <p class="total-items">Total Items: <%= cart.items.length %></p>
             </div>
+
+            <!-- Delivery Address -->
+            <div class="delivery-address">
+                <h3>Delivery Address</h3>
+                <ul>
+                <% userAddress.forEach((item) => { %>
+                    <li>
+                        <div>
+                            <p><strong>House Name:</strong> <%= item.houseName %></p>
+                            <p><strong>Pin Code:</strong> <%= item.pinCode %></p>
+                            <p><strong>PO:</strong> <%= item.po %></p>
+                            <p><strong>Location:</strong> <%= item.location %></p>
+                            <p><strong>State:</strong> <%= item.state %></p>
+                        </div>
+                        <input class="radio-btn" type="radio" name="addressId" onclick="addressSelect('<%= item.id %>')" value="<%= item._id %>">
+                    </li>
+                <% }); %>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Section (Payment and Order Summary) -->
+        <div class="order-summary-container">
+            <!-- Payment Method -->
+            <div class="payment-method"  id="selectedPaymentMethod">
+                <h3>Payment Method</h3>
+                <ul>
+                    <li>
+                        <span>Cash On Delivery</span>
+                        <input type="radio" class="radio-btn" name="payment" value="COD" id="cod" onclick="payment(value)" >
+                    
+                        <span>RazorPay</span>
+                        <input type="radio" class="radio-btn" name="payment" value="RazorPay" id="razorpay" onclick="payment(value)" >
+                    </li>
+                </ul>
+            </div>
+
+            <div class="coupen_session"> 
+                <input type="text" id="coupen" placeholder="Enter the coupen">
+                <button type="button" onclick="applyCoupen()">Apply Coupen </button>
+
+
+                <p id="couponMessage"></p>
+            </div>
+
             
-        </div>
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h4>Order Summary</h4>
+                <% cart.items.forEach((item) => { %> 
+                    <p><%= item.product.product_name %> - ₹<%= item.product.product_sale_price %></p>
+                    <% }); %>
 
-        <!-- Payment Method -->
-        <div class="payment-method">
-            <h3>Payment Method</h3>
-            <ul>
-                <li><input type="radio" name="payment" value="COD"> Cash On Delivery</li>
-              
-            </ul>
+
+                <hr>
+                <p class="total-amount" id="totalOffer" >Total Amount: ₹<%= onlyItems.totalSalesPrice %>  </p>
+                <button type="submit" onclick="checkInputs(event)" class="btn btn-primary btn-lg w-100" id="placeOrder" >Place Order</button>
+           
+            </div>
         </div>
     </div>
-
-    <!-- Right Section (Order Summary) -->
-    <div class="order-summary">
-        <h4>Order Summary</h4>
-        <% cart.items.forEach((item) => { %> 
-            <p><%= item.product.name %>  Price : ₹<%= item.product.product_sale_price %></p>
-        <% }); %>
-
-        <hr>
-        <h4>Total Amount: ₹<%= cart.totalSalesPrice %></h4>
-        <form action="/placeOrder" method="post">
-            <button class="place-order-btn">Place Order</button>
-
-        </form>
-    </div>
-</div>
-</form>
 </body>
-</html>
+<!-- 
+<script>
+    async function selectCoupen(coupenId,cartId){
+
+        // console.log('entered in the selectCoupen function',coupenId,cartId)
+
+        try {
+             const response = fetch('select_Coupen',{
+        method:'post',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({coupenId,cartId})
+
+      });
+      const data = await response.json();
+            console.log(data);
+        } catch (error) {
+            console.log(error.message)
+            return 
+            
+        }
+
+    }
+</script> -->
+
+<script>
+
+    
+//coupen//
+async function applyCoupen() {
+    const applyButton = document.querySelector('.coupen_session button');
+
+    const coupon = document.getElementById('coupen').value;
+    const couponField = document.getElementById('coupen')
+    console.log('cc',couponField)
+
+
+    try {
+        const response = await fetch('/applyCoupen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode: coupon })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const discountAmount = data.amount
+            const finalPrice=data.finalPrice
+            document.getElementById('totalOffer').innerText = `Total Amount: ₹${finalPrice}`;
+            document.getElementById('couponMessage').innerText = `Coupon applied! You saved ${discountAmount}.`;
+            applyButton.innerText='remove'
+            applyButton.onclick = () => removeCoupen(discountAmount);
+        } else {
+            document.getElementById('couponMessage').innerText = data.message;
+        }
+    } catch (error) {
+        console.log(error.message);
+        window.location.href = '/errorPage';
+    }
+}
+
+async function removeCoupen(price){
+
+    console.log('function is going on',price)
+    const applyButton = document.querySelector('.coupen_session button');
+    const couponField = document.getElementById('coupen');
+
+    couponField.value = '';
+    applyButton.innerText = 'Apply Coupon';
+    applyButton.onclick = applyCoupen;
+
+    const response = await fetch('/returnAmount',{
+        method:'post',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({price:price})
+    })
+
+    if(response.ok){
+        const data = await  response.json()
+        const returnAmount = data.returnAmount
+        console.log(data.returnAmount)
+        document.getElementById('totalOffer').innerText = `Total Amount: ₹${returnAmount}`;
+
+    }else{
+
+
+        document.getElementById('couponMessage').innerText = '';
+
+    }
+   
+
+
+}
+
+
+
+
+
+//razorpay//////
+function checkInputs(event) {
+
+
+event.preventDefault();
+event.stopPropagation();
+addressId = document.getElementById('selectedAddressId').value;
+console.log(addressId)
+paymentMethod = document.getElementById('selectedPaymentMethods').value;
+let form = document.getElementById('orderForm')
+if(!addressId){
+    swal.fire('info', 'please select an Address', 'info');
+} else if(!paymentMethod) {
+    console.log('select a payment ')
+    swal.fire('info', 'please choose A payment method', 'info');
+} else if(paymentMethod =='RazorPay') {
+    console.log('razorpay portal')
+    razor(form)
+} else {
+    
+ 
+form.submit()
+    
+    
+}
+}
+
+function addressSelect(id){
+console.log(id)
+
+    document.getElementById('selectedAddressId').value=id
+
+}
+function payment(id){
+    console.log(id)
+    document.getElementById('selectedPaymentMethods').value=id
+}
+
+
+async function razor(form){
+    try {
+        
+        const response = await fetch('/razorPay', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount: 500, currency: 'INR' }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        alert("Unable to create order");
+        return;
+      }
+
+      const options = {
+        key: "<%= process.env.RAZORPAY_KEY_ID %>",
+        amount: data.order.amount,
+        currency: data.order.currency,
+        order_id: data.order.id,
+        handler: async function (response) {
+          const verificationResponse = await fetch('/verify_razorPay', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(response),
+          });
+
+          const verificationData = await verificationResponse.json();
+
+          if (verificationData.success) {
+            
+            form.submit()
+          } else {
+            alert("Payment verification failed");
+          }
+        },
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+   
+
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
+
+
+
+
+</script>
+
+
+
+
+
+
+<script>
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    const codRadio = document.getElementById('cod');
+    const razorpayRadio = document.getElementById('razorpa');
+    
+    document.getElementById('razorpay').onlclick = async function () {
+    }
+      
+  </script>
 
 <%- include("../layouts/user_footer.ejs") %>
-

@@ -41,6 +41,15 @@ router.get('/edit_order/:id', adminController.editOrder);
 router.post('/delete_order/:id',adminController.deleteOrder)
 router.post('/updateStatus/:id',adminController.updateStatus)
 
+//****** Coupen ****************/
+router.get('/coupen',adminController.getCoupen)
+router.get('/load_add_Coupen',adminController.load_add_Coupen)
+router.post('/add_Coupen',adminController.add_Coupen)
+router.get('/load_edit_Coupen/:id',adminController.load_edit_Coupen)
+router.post('/edit_Coupen/:id',adminController.edit_Coupen)
+router.post('/delete/:id',adminController.delete_Coupen)
+
+
 
 
 

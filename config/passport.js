@@ -7,7 +7,7 @@ require('dotenv').config()  //do we need this ????????? i have alredy return thi
 
 passport.use(new GoogleStrategy({
         clientID      : process.env.GOOGLE_CLIENT_ID,
-        clientSecret  : process.env.CLIENT_SECRET,
+        clientSecret  : process.env.GOOGLE_CLIENT_SECRET,
         callbackURL   : 'http://localhost:3000/auth/google/callback' ,
     },
 
@@ -16,10 +16,12 @@ passport.use(new GoogleStrategy({
         try {
 
             let user = await User.findOne({googleId:profile.id})  //profile_id  is google id
-        
+            let existUser = await User.findOne({email:profile.emails[0].value})
             console.log("profile => \n",profile);
             console.log("Userdata of user who alredy signedup from google => \n",user);
-            
+            if(existUser){
+                return done(null,existUser)
+            }
             if(!user){
                 const user = new  User({
                     firstname: profile.name.givenName,

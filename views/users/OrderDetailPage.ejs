@@ -55,24 +55,24 @@
                     <td>
                         <% order.items.forEach(item => { %>
                             <div class="d-flex align-items-center mb-2">
-                                <img src="/newfile/<%= item.images %>" alt="Product Image" class="product-image me-2">
+                                <img src="/newfile/<%= item.images[0] %>" alt="Product Image" class="product-image me-2">
                                 <span><%= item.productName %></span>
                             </div>
                         <% }) %>
                     </td>
                     
                     <td>
-                        <span class="status-active"><%= order.status %></span>
+                        <span class="status-active"><%= order.orderStatus %></span>
                     </td>
                     <td>
-                        ₹<%= order.items.reduce((acc, item) => acc + item.salePrice, 0) %> <!-- Calculate total price -->
+                        ₹<%= order.totalAmount %> <!-- Calculate total price -->
                     </td>
                     <td>
-                        <%= order.address.houseName %><br>
-                        <%= order.address.pinCode %><br>
-                        <%= order.address.po %><br>
-                        <%= order.address.location %><br>
-                        <%= order.address.state %>
+                        <%= orderAddress.shippingAddress.houseName %><br>
+                        <%= orderAddress.shippingAddress.pinCode %><br>
+                        <%= orderAddress.shippingAddress.po %><br>
+                        <%= orderAddress.shippingAddress.location %><br>
+                        <%= orderAddress.shippingAddress.state %>
                     </td>
                     <td>
                         <form action=" /deleteOrder/<%= order._id %>" method="POST" style="display: inline;">

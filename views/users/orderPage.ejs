@@ -135,15 +135,15 @@
                             <td><%= order.createdAt.toLocaleDateString() %></td>
 
                             <!-- Payment Method -->
-                            <td><%= order.payment %></td>
+                            <td><%= order.paymentMethod %></td>
 
                             <!-- Delivery Address -->
                             <td>
                                 <div class="order-info">
-                                    <p><strong>House Name:</strong> <%= order.address.houseName %></p>
-                                    <p><strong>Location:</strong> <%= order.address.location %></p>
-                                    <p><strong>State:</strong> <%= order.address.state %></p>
-                                    <p><strong>Pin Code:</strong> <%= order.address.pinCode %></p>
+                                    <p><strong>House Name:</strong> <%= order.shippingAddress.houseName %></p>
+                                    <p><strong>Location:</strong> <%= order.shippingAddress.location %></p>
+                                    <p><strong>State:</strong> <%= order.shippingAddress.state %></p>
+                                    <p><strong>Pin Code:</strong> <%= order.shippingAddress.pinCode %></p>
                                 </div>
                             </td>
 
@@ -152,7 +152,7 @@
                                 <ul class="items-list">
                                     <% order.items.forEach(item => { %>
                                         <li>
-                                            <img src="/newfile/<%= item.images %>" alt="Product Image">
+                                            <img src="/newfile/<%= item.images[0] %>" alt="Product Image">
                                             <div>
                                                 <strong>Product:</strong> <%= item.productName %><br>
                                                 <strong>Quantity:</strong> <%= item.quantity %><br>

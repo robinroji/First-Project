@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,
         unique:true
-        
    },
 
     password:{
@@ -89,7 +88,12 @@ session:{
     type:String,
     default:false,
     required:true
-}
+},
+wishList:[{
+  type:mongoose.Schema.Types.ObjectId,
+  required:true,
+  ref:'WishList'
+}]
   
 
 },{timestamps:true})
