@@ -95,27 +95,31 @@
               document.getElementById("otp_error").textContent = "OTP must contain only numbers.";
               return false;
           }
+          if(!otp){
+            document.getElementById("otp_error").textContent = "Enter valid otp";
+
+          }
   
           return true;
       }
   
-      window.onload = function () {
-          var timerDisplay = document.getElementById('timer');
-          var resendButton = document.getElementById('resendButton');
-          resendButton.disabled = true;
-          var timer = 20;
+    //   window.onload = function () {
+    //       var timerDisplay = document.getElementById('timer');
+    //       var resendButton = document.getElementById('resendButton');
+    //       resendButton.disabled = true;
+    //       var timer = 10;
   
-          var interval = setInterval(function () {
-              timer--;
-              timerDisplay.textContent = timer + " seconds";
+    //       var interval = setInterval(function () {
+    //           timer--;
+    //           timerDisplay.textContent = timer + " seconds";
   
-              if (timer <= 0) {
-                  clearInterval(interval);
-                  resendButton.disabled = false;
-                  timerDisplay.textContent = "You can resend the OTP now.";
-              }
-          }, 1000);
-      };
+    //           if (timer <= 0) {
+    //               clearInterval(interval);
+    //               resendButton.disabled = false;
+    //               timerDisplay.textContent = "You can resend the OTP now.";
+    //           }
+    //       }, 1000);
+    //   };
   </script>
   </body>
   </html>

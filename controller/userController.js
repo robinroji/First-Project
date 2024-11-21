@@ -12,6 +12,7 @@ const razorPay = require("../config/razorPay");
 const crypto = require("crypto");
 const Coupen = require('../model/coupenModel')
 const mongoose =require('mongoose')
+const Wallet = require('../model/walletModel')
 
 
 
@@ -366,7 +367,7 @@ const get_resend_otp = async(req,res)=>{
 const logout = async (req,res)=>{
     try {
         req.session.destroy();
-        res.render('login')
+        res.redirect('/login')
     } catch (error) {
         console.log(error.message);
         
@@ -499,11 +500,11 @@ const get_productPage = async (req,res)=>{
 const shop = async(req,res)=>{
     try {
 
-console.log('entered homepage');
+console.log('entered shopage');
 
-        const sortOption = req.query.sort        
-        const categoryId = req.query.category
         const searchQuery = req.query.q || ''
+        const categoryId = req.query.category||null
+        const sortOption = req.query.sort        
 
         console.log('the category is ',categoryId);
 
@@ -546,18 +547,27 @@ console.log('entered homepage');
 
 
 
+            const category = await Category.findById(categoryId)
+            console.log('the catt is ',category)
 
-        const activeProduct = await Product.find(search).sort(sortCrieteria).populate('product_category');
+        const activeProduct = await Product.find(search).sort(sortCrieteria).populate()
+        console.log('activeProduct is ',activeProduct)
+        
         const allCategories = await Category.find({isListed:true});
 
 
 
-        const product = await Product.find({product_name:searchQuery})
+        let product = await Product.find({product_name:searchQuery})
         console.log('search route working',product);
 
 
+            const page = parseInt (req.query.page)
+            const limit = 4
+            const skip =(page-1)*limit
 
-      
+            const totalProduct = await Product.countDocuments()
+            product = await Product.find({product_name:searchQuery}).limit(limit).skip(skip)
+
 
 
         if(!activeProduct|| !allCategories){
@@ -568,7 +578,8 @@ console.log('entered homepage');
                 product:activeProduct ,
                 category:allCategories,
                 sortOption,
-                searchQuery
+                searchQuery,
+                totalPages:Math.ceil(totalProduct/limit)
 
             });
         }
@@ -982,7 +993,7 @@ const loadOrders = async (req,res)=>{
        
        const orders = await Order.find({user:user}).sort({createdAt:-1})
        const orderAdderess= await Order.find({user:user}).populate('shippingAddress')
-       console.log('the new item is ',orders)
+    //    console.log('the new item is ',orders)
 
         res.render('orderPage',{orders})
     } catch (error) {
@@ -1029,10 +1040,37 @@ const updateOrder = async(req,res)=>{
 
 const deleteOrder = async (req,res)=>{
     try {
-        const order = await Order.findByIdAndDelete(req.params.id)
-        console.log('reached the order cancel');
+        const orderData = await Order.findOne({_id:req.params.id})
+        console.log('the orderdata is ',orderData)
+        console.log('reached the order cancel',req.params.id);
+
+        const existingUser = await Wallet.findOne({user:orderData.user})
+        if(existingUser){
+            console.log('existing',existingUser);
+            existingUser.balance+=orderData.totalAmount
+            existingUser.save()
+            const order = await Order.findByIdAndDelete(req.params.id)
+            res.redirect('/orders')
+        }else{
+
+            
+        const walletData = await new Wallet({
+            user:req.session.user_id,
+            balance:orderData.totalAmount
+
+
+        })
+
+        walletData.save()
         
+        const order = await Order.findByIdAndDelete(req.params.id)
+
+       
         return res.redirect('/orders')
+
+        }
+
+
         
     } catch (error) {
         console.log(error.message); 
@@ -1043,7 +1081,7 @@ const deleteOrder = async (req,res)=>{
 const loadWishList = async (req, res) => {
     try {
         const products = await WishList.find({ user: req.session.user_id }).populate('product');
-
+        console.log('ll',products._id)
        
         res.render('wishList', { product: products});
     } catch (error) {
@@ -1086,6 +1124,7 @@ const remove_product = async(req,res)=>{
     
     try {
         const product = req.params.id
+        console.log('gg',product.product_name)
         console.log(product)
         const delete_product = await WishList.findByIdAndDelete(product)
         return res.redirect('/wishList');
@@ -1228,7 +1267,7 @@ const applyCoupen = async(req,res)=>{
             let finalPrice
             discountAmount = (coupon.discountPercentage / 100) * salesPrices
             finalPrice = cart.totalSalesPrice-discountAmount
-            // console.log('am',discountAmount)
+            console.log('am',discountAmount)
 
             cart.totalSalesPrice = finalPrice;
 
@@ -1249,7 +1288,24 @@ const applyCoupen = async(req,res)=>{
 
 
 const returnAmount = async (req,res)=>{
+    const {couponCode} =req.body
     try {
+       
+
+        const existingCoupon = await Coupen.findOne({
+            code: couponCode, // Check for the correct coupon code
+            usedBy: { $in: [req.session.user_id] } // Check if the user's ID is in the usedBy array
+        });
+               
+        if (existingCoupon) {
+            await Coupen.updateOne(
+                { code: couponCode },
+                { $pull: { usedBy: req.session.user_id } }
+            );
+            
+        }
+        
+       
         console.log('returnAmount route is getting ')
         const {price} = req.body
         console.log(price)
@@ -1268,11 +1324,154 @@ const returnAmount = async (req,res)=>{
     }
 }
 
+//*******  wallet   *********/
+
+const wallet = async(req,res)=>{
+    try {
+        const walletAmount = await Wallet.findOne({user:req.session.user_id})
+        res.render('wallet',{walletAmount:walletAmount.balance})
+        
+    } catch (error) {
+        console.log(error.message);
+        return res.redirect('/errorPage')
+      
+    }
+}
+
+//***** load_checkout_addAddress */
+const load_checkout_addAddress = async(req,res)=>{
+    try {
+        res.render('checkoutAddaddress')
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
+
+//**** checkout_addAddress  */
+const checkout_addAddress = async(req,res)=>{
+    try {
+        
+const existingUser = await User.findById(req.session.user_id)
+
+const address = new Address({
+    houseName:req.body.houseName,
+    
+    pinCode:req.body.pinCode,
+    po:req.body.po,
+    location:req.body.location,
+    state:req.body.state,
+    address:req.body.address,
+})
+const newAddress = await address.save()
+existingUser.address.push(newAddress._id)
+await existingUser.save()
 
 
+console.log('address is ',newAddress);
+
+return res.redirect('/checkOut')
+
+    } catch (error) {
+        consol.log(error.message)
+            res.redirect('/errorPage')
+        
+        
+    
+}
+}
+
+//********   load_forgotPassword  */
+
+const load_forgotPassword = async(req,res)=>{
+    try {
+        console.log('entered into the forgot password route');
+        return res.render('forgotPassword',{msg:''})
+        
+        
+    } catch (error) {
+        console.log(error.message);
+        return res.redirect('/errorPage')
+        
+        
+    }
+}
 
 
+//*******  verify_mail  */
+const verify_mail = async(req,res)=>{
+    try {
+        console.log('enterd in the verify mail');
+        const {email}=req.body
 
+        const user = await User.findOne({email:email})
+
+        if(!user){
+          return res.render('forgotPassword',{msg:'user not found'})
+        }
+
+    const otp = genrateOtp();
+    user.otp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+    await user.save();
+    console.log('the new otp is ',user.otp)
+
+    sendVerifyMail(user.firstname,user.email,user._id,user.otp)
+
+    res.render('resetPasswordOtp',{message:'',user})
+        
+    } catch (error) {
+        console.log(error.message)
+        return res.redirect('/errorPage')
+
+        
+    }
+}
+
+//******** otp_forgotPassword */
+
+const otp_forgotPassword = async(req,res)=>{
+    try {
+
+        const {otp,userId} =req.body;
+        const user = await User.findById(userId);
+
+        console.log('the inputotp iss',userId)
+        console.log('the userid is ',user)
+
+        if(otp===user.otp){
+            console.log('its matching');
+            req.session.user_id=user
+            res.redirect('/')
+
+            
+        }else{
+            return res.render('resetPasswordOtp',{message:'user not found',user})
+        }
+
+        
+    } catch (error) {
+        console.log(error.message);
+        res.redirect('/errorPage')
+        
+    }
+}
+
+const add_toCart = async(req,res)=>{
+    try {
+        console.log('hhh',req.params.id)
+        const product = await Product.findOne({_id:req.params.id})
+        const wish = await WishList.findOne({_id:req.params.id})
+        console.log(product.product_name)
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
 
 
 
@@ -1338,7 +1537,14 @@ module.exports={
     orderPlaced,
     selectCoupen,
     applyCoupen,
-    returnAmount
+    returnAmount,
+    wallet,
+    load_checkout_addAddress,
+    checkout_addAddress,
+    load_forgotPassword,
+    verify_mail,
+    otp_forgotPassword,
+    add_toCart
     
 
 }

@@ -2,9 +2,11 @@ const Product = require('../model/productModel')
 const Category = require('../model/categoryModel');
 const fs = require('fs');
 const path = require('path')
+const ProductOffer = require('../model/productOfferModel')
 
 const addProduct = async(req,res)=>{
-    console.log('add product is comming');
+    // console.log('add product is comming',req.body.pro_name);
+
     
 try {
     
@@ -64,7 +66,6 @@ const load_product = async(req,res)=>{
 
 const productPage = async(req,res)=>{
     try {
-        console.log('logs into the page');
         
        
 
@@ -75,10 +76,8 @@ const productPage = async(req,res)=>{
         const totalProduct = await Product.countDocuments()
         const product =await Product.find().sort({createdAt:-1}).populate('product_category').limit(limit).skip(skip)
 
-        const aa = product.length
-        console.log(aa);
         
-        console.log('bug page entered');
+        
 
             res.render('products',{product,totalPages:Math.ceil(totalProduct/limit)})       
                 
@@ -99,10 +98,11 @@ const load_edit_page = async(req,res)=>{
     
     try {
         
-        
+        const productOffer = await ProductOffer.find()
+        // console.log('available productoffer is ',productOffer)
         const product = await Product.findById(req.params.id).populate
         ('product_category')
-        console.log('product is',product);
+        // console.log('product is',product);
 
 
         const category= await  Category.find();
@@ -111,8 +111,16 @@ const load_edit_page = async(req,res)=>{
             console.log('no product found ');
             
         }
+        let offerxist = false
+        for(let i=0;i<productOffer.length;i++){
+                
+            if( productOffer[i].usedBy.includes(product._id)){
+                offerxist = true
+            }
 
-      return res.render('edit-product',{product,category})
+        }
+
+      return res.render('edit-product',{offerxist,product,category,productOffer})
         
     } catch (error) {
         console.log(error.message);
@@ -273,6 +281,134 @@ const img_delete = async (req, res) => {
 //   }
 
 
+//***** **     load_productOffer   */
+const load_productOffer = async(req,res)=>{
+    try {
+        res.render('productOfferPage',{categories:null})
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
+//******** prouct offer *******/
+const productOffer = async(req,res)=>{
+    try {
+        
+        const newOffer = new ProductOffer({
+            name:req.body.productName,
+            discountPercentage:req.body.productDiscount,
+            startDate:req.body.startDate,
+            expiryData:req.body.expiryDate,
+            description:req.body.description,
+            status:req.body.status,
+        })
+            await newOffer.save()
+    
+
+    res.redirect('/product/productPage')
+    } 
+    catch (error) {
+        console.log(error.message);
+        res.redirect('/errorPage')
+        
+        
+    }
+}
+
+//******** apply productOffer ****/
+
+const applyProducOffer = async(req,res)=>{
+    try {
+        const {offerId,productId} = req.body
+        const offerProduct = await ProductOffer.findById(req.body.offer)
+        console.log('oo',offerId)
+        console.log('productId is ',productId)
+
+        const product = await Product.findById(productId)
+        const productOffer = await ProductOffer.findById(offerId)
+
+
+        const existing = await ProductOffer.findOne({_id:productOffer,
+            usedBy:{$in:[product]}
+        })
+            if(existing){
+                console.log('offer alredy claimed for the product')
+                return
+            }
+      console.log('existing',existing)
+
+       const offerAmount = product.product_sale_price * productOffer.discountPercentage /100
+       console.log('offer is ',offerAmount)
+       product.product_sale_price = product.product_sale_price-offerAmount
+
+       productOffer.usedBy.push(product)
+
+       product.save()
+       productOffer.save()
+        
+        res.json({amount:product.product_sale_price,offerAmount:offerAmount})
+       
+
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
+
+//**********   removeOffer   *************/
+
+
+const removeOffer = async(req,res)=>{
+    try {        
+        const productId = req.body.productId
+        const offerAmount = req.body.offerAmount
+        console.log('offeramount is ',req.body.offerAmount)
+        const product = await Product.findById(productId)
+        console.log('productId',product)
+        const updatedProduct = await Product.findByIdAndUpdate( product, { $inc: { product_sale_price: offerAmount } }, { new: true });
+        console.log('newprice', updatedProduct.product_sale_price)
+        const productOffer = await ProductOffer.findOneAndUpdate({usedBy:productId},{$pull:{usedBy:productId}},{new:true})
+        const actualPrice = updatedProduct.product_sale_price
+        // console.log('productOffer is',productOffer)
+        res.json({offer:productOffer,actualPrice:actualPrice})
+
+
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -285,6 +421,10 @@ module.exports ={
     active_product,
     deactive_product,
     img_delete,
+    load_productOffer,
+    productOffer,
+    applyProducOffer,
+    removeOffer
     
     
 }

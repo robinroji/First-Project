@@ -82,6 +82,9 @@
         .text-danger{
             color: red;
         }
+        .forgot-password{
+            text-align: end;
+        }
     </style>
 </head>
 <body>
@@ -104,7 +107,10 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password">
             <div class="error" id="passwordError">Please enter your password.</div>
-        </div>
+        </div >
+        <div class="forgot-password" >  <a href="/load_forgotPassword">Forgot password?</a></div>
+        <br>
+
         <button type="submit" class="login-btn">Login</button>
     </form>
     <!-- Signup button -->

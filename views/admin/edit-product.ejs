@@ -47,7 +47,7 @@
                 
                 <div class="mb-3">
                     <label for="productOfferPrice" class="form-label">Offer Price</label>
-                    <input type="number" class="form-control" name="pro_sale_price" placeholder="<%= product.product_sale_price %>" value="<%= product.product_sale_price %>" min="0">
+                    <input type="number" id="saleprice" class="form-control" name="pro_sale_price" placeholder="<%= product.product_sale_price %>" value="<%= product.product_sale_price %>" min="0">
                 </div>
                 
                 <div class="mb-3">
@@ -71,93 +71,225 @@
                     <label for="imagePreview" class="form-label">New Images Preview</label>
                     <div id="imagePreview" class="d-flex flex-wrap"></div>
                 </div>
+                <input  type="hidden" value=" "  id="offervalue"  name="offervalue" >
+                <button onclick="removeOffer(event,'<%= product._id %>' , offervalue.value)">Remove Offer </button><br><br>
+
+                <div class="row">
+                    <% productOffer.forEach((item) => {%> 
+
+
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="<%= item.imageUrl %>" class="card-img-top" alt="<%= item.name %>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= item.name %></h5>
+                                    <p class="card-text"><strong>Offer percentage:<%= item.discountPercentage%></strong></p>
+                                    <p class="card-text"><strong>Offer from :<%= item.startDate %></strong></p>
+                                    <p class="card-text"><strong>Offer Expires :<%= item.expiryData %></strong></p>
+                                    <p class="card-text"><strong>Description:<%= item.description %></strong></p>
+
+                                    <button class="offer-btn" <% if(offerxist) {%> disabled <% } %> onclick="productofferButton(event,'<%= item._id %>','<%= product._id%>')">Apply Offer </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    <%  }) %>
+                </div>  
+
                 
-                <button type="submit" class="btn btn-primary">Update Product</button>
+                
+                <button  type="submit" class="btn btn-primary">Update Product</button>
             </form>
         </div>
     </div>
 </section>
-
 <script>
-    async function removeImage(event,product_id,img){
-     console.log('clickreed')
-     event.preventDefault()
-     event.stopPropagation()
- 
- try {
-     Swal.fire({
-     title: 'Loading...',
-     text: 'Please wait while we process your request.',
-     allowOutsideClick: false, // Prevent closing on outside click
-     didOpen: () => {
-         Swal.showLoading();
-     }
- });
-     const response = await fetch('/product/img_delete',{
-         method:'DELETE',
-         headers:{'Content-Type':'application/json'},
-         body:JSON.stringify({product_id,img})
-     })
- 
-     if(!response.ok) throw new Error('Response error')
- 
-      const data = await response.json()
-  
-      if(!data.success) throw new Error(data.message||'Image deletion error')
-     Swal.close();
-     window.location.reload()
-     
- 
- } catch (error) {
-     Swal.close();
-     console.log(error)
- }
- 
- 
- }
- </script>
+let  offerAmount = 0
 
+async function removeOffer(event,productId,offerAmount){
+    console.log('off am',offerAmount)
+    event.preventDefault()
+    try {
+        const response = await fetch('/product/removeOffer',{
 
+            method:'post',
+            headers:{
+                'Content-Type':'application/json',
+            },
+            body:JSON.stringify({productId,offerAmount})
+        })
 
-<script>
-function validateForm() {
-    const productName = document.forms["productForm"]["pro_name"].value;
-    const productBrand = document.forms["productForm"]["pro_brand"].value;
-    const productDescription = document.forms["productForm"]["pro_description"].value;
-    const category = document.forms["productForm"]["pro_category"].value;
-    const regularPrice = document.forms["productForm"]["pro_reg_price"].value;
-    const quantity = document.forms["productForm"]["pro_quantity"].value;
-    const salePrice = document.forms["productForm"]["pro_sale_price"].value;
+        const data = await response.json();
 
-    if (!productName || !productBrand || !productDescription || !category || !regularPrice || !quantity) {
-        alert("Please fill out all required fields.");
-        return false;
+        if(data){
+            const buttons = document.querySelectorAll('.offer-btn');
+
+            buttons.forEach(button => {
+                button.disabled=false;
+            });
+
+            document.getElementById('saleprice').value = data.actualPrice
+        }else{
+            console.log('else workking')
+        }
+
+        Swal.fire({
+                title: 'Success',
+                text: 'Offer removed successfully!',
+                icon: 'success',
+                allowOutsideClick: false,
+            });
+
+    } catch (error) {
+        console.log(error.message)
+        
+        
     }
-
-    if (isNaN(regularPrice) || regularPrice < 0) {
-        alert("Please enter a valid positive number for Price.");
-        return false;
-    }
-
-    if (isNaN(quantity) || quantity <= 0) {
-        alert("Please enter a valid positive integer for Quantity.");
-        return false;
-    }
-
-    if (salePrice && (isNaN(salePrice) || salePrice < 0)) {
-        alert("Please enter a valid positive number for Offer Price.");
-        return false;
-    }
-
-    const existingImages = document.getElementById('existingImages').children.length;
-    const newImages = document.getElementById('imagePreview').children.length;
-    if (existingImages + newImages > 3) {
-        alert("You can only have up to 3 images in total.");
-        return false;
-    }
-
-    return true;
 }
-</script>
 
-<%- include('../layouts/admin_footer.ejs') %>
+
+
+
+
+
+
+
+
+
+
+
+    async function removeImage(event, product_id, img) {
+        console.log('clicked');
+        event.preventDefault();
+        event.stopPropagation();
+    
+        try {
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Please wait while we process your request.',
+                allowOutsideClick: false, // Prevent closing on outside click
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            const response = await fetch('/product/img_delete', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product_id, img })
+            });
+    
+            if (!response.ok) throw new Error('Response error');
+    
+            const data = await response.json();
+    
+            if (!data.success) throw new Error(data.message || 'Image deletion error');
+            Swal.close();
+            window.location.reload();
+        } catch (error) {
+            Swal.close();
+            console.log(error);
+        }
+    }
+    </script>
+    <!-- //////////////////////////     offer Button       ////////////////////////////////////////////// -->
+    <script>
+
+        
+
+    async function productofferButton(event, offerId, productId) {
+        event.preventDefault();
+        try {
+            const response = await fetch('/product/applyProducOffer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ offerId, productId }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to apply offer. Please try again.');
+            }
+    
+            const data = await response.json(); // Parse response
+            console.log('Server Response:', data);
+
+            offerAmount = data.offerAmount
+            console.log('offerAmount is' ,data.offerAmount)
+
+            document.getElementById('saleprice').value=data.amount
+
+            document.getElementById('offervalue').value=offerAmount
+            console.log('vl is',document.getElementById('offervalue').value)
+
+    
+            // Select all buttons with the class "offer-btn"
+            const buttons = document.querySelectorAll('.offer-btn');
+    
+            // Disable all buttons
+            buttons.forEach(button => {
+                button.disabled= true;
+            });
+    
+            // Show success message
+            Swal.fire({
+                title: 'Success',
+                text: 'Offer applied successfully!',
+                icon: 'success',
+                allowOutsideClick: false,
+            });
+        } catch (error) {
+            Swal.fire({
+                title: 'Error',
+                text: error.message,
+                icon: 'error',
+                allowOutsideClick: false,
+            });
+        }
+    }
+    </script>
+    
+    <script>
+    function validateForm() {
+        const productName = document.forms["productForm"]["pro_name"].value;
+        const productBrand = document.forms["productForm"]["pro_brand"].value;
+        const productDescription = document.forms["productForm"]["pro_description"].value;
+        const category = document.forms["productForm"]["pro_category"].value;
+        const regularPrice = document.forms["productForm"]["pro_reg_price"].value;
+        const quantity = document.forms["productForm"]["pro_quantity"].value;
+        const salePrice = document.forms["productForm"]["pro_sale_price"].value;
+    
+        if (!productName || !productBrand || !productDescription || !category || !regularPrice || !quantity) {
+            alert("Please fill out all required fields.");
+            return false;
+        }
+    
+        if (isNaN(regularPrice) || regularPrice < 0) {
+            alert("Please enter a valid positive number for Price.");
+            return false;
+        }
+    
+        if (isNaN(quantity) || quantity <= 0) {
+            alert("Please enter a valid positive integer for Quantity.");
+            return false;
+        }
+    
+        if (salePrice && (isNaN(salePrice) || salePrice < 0)) {
+            alert("Please enter a valid positive number for Offer Price.");
+            return false;
+        }
+    
+        const existingImages = document.getElementById('existingImages').children.length;
+        const newImages = document.getElementById('imagePreview').children.length;
+        if (existingImages + newImages > 3) {
+            alert("You can only have up to 3 images in total.");
+            return false;
+        }
+    
+        return true;
+    }
+    </script>
+    
+    <%- include('../layouts/admin_footer.ejs') %>
+    

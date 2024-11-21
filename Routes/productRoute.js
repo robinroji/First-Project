@@ -57,7 +57,11 @@ route.post('/deactivate/:id',admin_auth.isLogin,product_controller.deactive_prod
 //** Delete image */
 route.delete('/img_delete',product_controller.img_delete)
 
-//*** filter sesssion ********/
+//****   Product Offer */
+route.get('/load_productOffer',admin_auth.isLogin,product_controller.load_productOffer)
+route.post('/productOffer',product_controller.productOffer)
+route.post('/applyProducOffer',product_controller.applyProducOffer)
+route.post('/removeOffer',product_controller.removeOffer)
 
 
 

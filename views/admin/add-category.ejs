@@ -1,34 +1,44 @@
 <%- include('../layouts/admin_header.ejs') %>
 <section class="content-main">
     <div class="content-header">
-        <h2 class="content-title">Add New Category</h2>
-        <div>
-            <a href="/category/categoryPage" class="btn btn-light rounded btn-sm"><i class="fas fa-arrow-left"></i> Back to categories</a>
+        
+        
+            <!-- Code for false condition -->
+            <h2 class="content-title">Add New Category</h2>
+            <div>
+                <a href="/category/categoryPage" class="btn btn-light rounded btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to categories
+                </a>
+            </div>
         </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <form action="/category/add_category" method="post" class="col-md-8 mx-auto" id="categoryForm">
-                
-                <div class="mb-4 text-center">
-                    <label for="name" class="form-label">Category Name</label>
-                    <input type="text" name="name" id="name" placeholder="Enter category name" class="form-control" >
-                    <div class="invalid-feedback">Please provide a valid category name (3-10 characters).</div>
-                </div>
 
-                <div class="mb-4 text-center">
-                    <label for="name" class="form-label">Category description</label>
-                    <input type="text" name="description" id="description" placeholder="Enter category description" class="form-control" >
-                    <div class="invalid-feedback">Please provide a valid category name (3-10 characters).</div>
-                </div>
-              
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Add Category</button>
-                </div>
-            </form>
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="/category/add_category" method="post" class="col-md-8 mx-auto" id="categoryForm">
+                    <% if (message) { %>
+                        <p><%= message %></p>
+                    <% } else { %>
+                    <div class="mb-4 text-center">
+                        <label for="name" class="form-label">Category Name</label>
+                        <input type="text" name="name" id="name" placeholder="Enter category name" class="form-control">
+                        <div class="invalid-feedback">Please provide a valid category name (3-10 characters).</div>
+                    </div>
+
+                    <div class="mb-4 text-center">
+                        <label for="description" class="form-label">Category Description</label>
+                        <input type="text" name="description" id="description" placeholder="Enter category description" class="form-control">
+                        <div class="invalid-feedback">Please provide a valid category description (3-10 characters).</div>
+                    </div>
+                  
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    <% } %>
 </section>
+
 
 
 

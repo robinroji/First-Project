@@ -14,9 +14,10 @@
             <div class="col-lg-3 col-md-4 col-12 order-lg-last filter-category-wrapper">
 
                 <!-- Search Form -->
-                <form action="/shop?q=<% product %>" method="get" role="search" class="mb-4">
+                <form action="/shop?q=<% product %>" method="get" role="search"  id="search" class="mb-4">
                     <div class="input-group">
                         <input type="search" name="q" class="form-control rounded-pill" placeholder="Search product" style="border-radius: 20px 0 0 20px;">
+                        <input type="hidden" name="catId" value="<% category._id %>">
                         <button type="submit" class="btn btn-outline-secondary" style="border-radius: 0 20px 20px 0; background-color: rgba(3, 14, 47, 0.252); border: none;">
                             <i class="bi bi-search"></i>
                         </button>
@@ -29,14 +30,16 @@
             
                 <!-- Category Filter -->
                 <h5 class="filter-title">Category</h5>
-                <ul class="list-group list-unstyled">
-                    <% category.forEach((category) => { %>
-                        <li class="mb-2">
-                            <a href="/shop?category=<%= category._id %>" class="text-decoration-none text-dark">
-                                <i class="bi bi-chevron-right me-1"></i><%= category.name %>
-                            </a>
-                        </li>
-                    <% }) %>
+<ul class="list-group list-unstyled">
+    <% category.forEach((category) => { %>
+        <li class="mb-2">
+            <a href="/shop?category=<%= category._id %>" class="text-decoration-none text-dark">
+                <i class="bi bi-chevron-right me-1"></i><%= category.name %>
+            </a>
+        </li>
+    <% }) %>
+</ul>
+
                     <button type="reset" onclick="window.location.href='/shop'" class="btn btn-outline-secondary btn-sm mt-2">Clear Category</button>
                 </ul>
             
@@ -57,7 +60,7 @@
                         <button type="submit" class="btn btn-outline-primary btn-sm w-100">
                             <i class="bi bi-funnel-fill me-2"></i>Apply Filters
                         </button>
-                    </form>
+                    </form> 
                 </div>
             </div>
             
@@ -108,7 +111,26 @@
             </div>
         </div>
     </div>
-   
+    <!--  pagination -->
+
+    <div class="pagination-area mt-15 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <!-- Pagination elements -->
+                <div class="pagination-container d-flex justify-content-end ">
+                    <ul class="pagination">
+            
+                            <% for(let i=0;i<totalPages;i++){%>
+                                <a class="page-link" href="?page=<% i %> <%= i %>"></a>
+                          <%}%>
+                                
+                     </ul>
+                     </div>
+            </ul>
+        </nav>
+    </div>
+
+    
 </section>
 
 
@@ -126,6 +148,11 @@
                 item.style.display = 'none';
             }
         });
+    }
+
+    function catId (id){
+        console.log('hi',id)
+        document.getElementById('search').value = id
     }
 </script>
 

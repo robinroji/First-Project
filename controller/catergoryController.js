@@ -22,7 +22,7 @@ const load_addCategory = async (req,res) =>{
     
     try {
 
-        res.render('add-category')
+        res.render('add-category',{message:''})
      } catch (error) {
         console.log(error.message);
         res.redirect('/errorpage')
@@ -42,12 +42,12 @@ const addCategory = async (req,res)=>{
           
 
         })
-        const existingCat = await Category.findOne({name:req.body.name})
+        const existingCat = await Category.findOne({ name: { $regex: `^${req.body.name}$`, $options: 'i' } });
 
        
         if(existingCat){
                 console.log('category name alredy exist');
-                res.redirect('/errorPage')
+                res.status(400).render('add-category', { message: 'Name already exists' });
 
             }else{
                     const cat =   await  newCategory .save();

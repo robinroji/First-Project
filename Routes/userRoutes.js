@@ -57,6 +57,11 @@ user_route.post('/verify-otp',userController.post_otp)
 user_route.get('/resend-otp',userController.get_resend_otp)
 user_route.post('/resend-otp',userController.resend_otp)
 
+//** Forgot Password */
+user_route.get('/load_forgotPassword',userController.load_forgotPassword)
+user_route.post('/verify_mail',userController.verify_mail)
+user_route.post('/otp_forgotPassword',userController.otp_forgotPassword)
+
 
 //**logout**/
 user_route.get('/logout',userController.logout)
@@ -110,6 +115,7 @@ user_route.get('/move_to_cart/:id',auth.isLogin,cartController.move_to_cart)
 user_route.get('/delete_product/:id',auth.isLogin,cartController.delete_product)
 user_route.post('/update-quantity',auth.isLogin,cartController.qt_increase)
 
+
 //** Check Out */
 user_route.get('/checkOut',userController.loadCheckout)
 user_route.post('/orderAddress',userController.orderAddress)
@@ -117,6 +123,9 @@ user_route.get('/edit_editAddress/:id',userController.load_Editaddress)
 user_route.post('/edit_address',userController.edit_Editaddress)
 user_route.post('/select_address/:id',userController.select_address)
 user_route.post('/payment/:id',userController.payment)
+user_route.get('/load_checkout_addAddress',userController.load_checkout_addAddress)
+user_route.post('/checkout_addAddress',userController.checkout_addAddress)
+
 
 //***** Order ****/
 user_route.post('/placeOrder',auth.isLogin,userController.placeOrder)
@@ -130,6 +139,7 @@ user_route.get('/orderPlaced',userController.orderPlaced)
 user_route.get('/wishList',auth.isLogin,userController.loadWishList)
 user_route.get('/move_to_wishList/:id',auth.isLogin,userController.wishlist)
 user_route.post('/remove_product/:id',userController.remove_product)
+user_route.get('/add_toCart/:id',userController.add_toCart)
 
 //***  Payment ************/
 user_route.post('/razorPay',auth.isLogin,userController.razorPayment)
@@ -139,6 +149,9 @@ user_route.post('/verify_razorPay',auth.isLogin,userController.verify_razorPay)
 user_route.post('/select_Coupen',userController.selectCoupen)
 user_route.post('/applyCoupen',userController.applyCoupen)
 user_route.post('/returnAmount',userController.returnAmount)
+
+//*** Wallet *****/
+user_route.get('/wallet',userController.wallet)
 
 
 

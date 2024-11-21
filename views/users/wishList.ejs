@@ -16,7 +16,7 @@
 <body>
 
 <div class="container cart-container">
-    <h1 class="mb-4">Shopping Cart</h1>
+    <h1 class="mb-4">WishList</h1>
     
     <!-- Cart Items Section -->
     <!-- Cart Items Section -->
@@ -45,12 +45,11 @@
                     </div>
                     <br>
                 </form>
-                <form action="/move_to_cart/<%= item._id %>" method="get">
                     <div> 
-                        <!-- <button type="submit" class="btn btn-outline-danger btn-sm">Add to Cart</button> -->
-
+                            <form action="/move_to_cart/<%= item.product._id %>" method="get">
+                                <button> Add to cart</button>
+                            </form>
                     </div>
-                </form>
             </div>
         </div>
     <% }); %>

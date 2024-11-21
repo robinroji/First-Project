@@ -1,5 +1,28 @@
-+<%- include('../layouts/user_header.ejs') %>
+<%- include('../layouts/user_header.ejs') %>
     
+<style>
+
+/* Container for the zoomed image */
+.zoom-container {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+/* Image styling */
+.zoom-container img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease; /* Smooth transition for zoom effect */
+}
+
+/* Zoom effect on hover */
+.zoom-container:hover img {
+    transform: scale(1.5); /* Zoom in by 1.5 times */
+    transform-origin: center center; /* Center the zoom effect */
+}
+
+</style>
 
 <div class="msg">   <% if (locals.msg) { %>
     <h3><%= msg %></h3>
@@ -13,7 +36,7 @@
                     </a> <span></span> Product Details</a>
                 </div>
             </div>
-        </div>
+        </div> 
         <div class="mobile-header-active mobile-header-wrapper-style">
             <div class="mobile-header-wrapper-inner">
                 <div class="mobile-header-top">
@@ -61,8 +84,8 @@
                                             <% if (product && product.product_image && product.product_image.length > 0) { %>
                                                 <div class="row justify-content-center">
                                                     <!-- Large Image -->
-                                                    <div class="col-12 mb-3 d-flex justify-content-center">
-                                                        <img id="mainImage" src="/newfile/<%= product.product_image[0] %>" class=" large-image" alt="product image">
+                                                    <div class="zoom-container">
+                                                        <img src="/newfile/<%= product.product_image[0] %>" id="mainImage" class="large-image" alt="Product Image">
                                                     </div>
                                                 </div>
                                                 
@@ -146,11 +169,11 @@
         <!-- Buy Now and Add to Cart Buttons -->
         <div class="bt-1 border-color-1 mt-30 mb-30"></div>
 
-        <% if (!check) { %> 
+       
             <div class="product-buttons">
                 <a href="/move_to_cart/<%= product._id %>" class="btn btn-secondary btn-lg ml-10">Add to Cart</a>
             </div>
-        <% } %>
+        
         
 
        

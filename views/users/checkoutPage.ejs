@@ -131,7 +131,11 @@
         .small-radio {
     width: 15px;
     height: 15px;
-}
+    }
+    .viewCouponsButton{
+        align-items: end;
+    }
+    
 
     </style>
 </head>
@@ -173,6 +177,10 @@
             <!-- Delivery Address -->
             <div class="delivery-address">
                 <h3>Delivery Address</h3>
+                <br>
+                <div>
+                   <a class="btn btn-primary" href="/load_checkout_addAddress" > add address</a>
+                </div>
                 <ul>
                 <% userAddress.forEach((item) => { %>
                     <li>
@@ -182,7 +190,9 @@
                             <p><strong>PO:</strong> <%= item.po %></p>
                             <p><strong>Location:</strong> <%= item.location %></p>
                             <p><strong>State:</strong> <%= item.state %></p>
+                           <button type="button" onclick="window.location.href='/edit_editAddress/<%=item._id%>' "> Edit Address</button>
                         </div>
+                        
                         <input class="radio-btn" type="radio" name="addressId" onclick="addressSelect('<%= item.id %>')" value="<%= item._id %>">
                     </li>
                 <% }); %>
@@ -209,17 +219,54 @@
             <div class="coupen_session"> 
                 <input type="text" id="coupen" placeholder="Enter the coupen">
                 <button type="button" onclick="applyCoupen()">Apply Coupen </button>
+                <button type="button" id="viewCouponsButton" data-bs-toggle="modal" data-bs-target="#couponModal">View Coupons</button>
+
 
 
                 <p id="couponMessage"></p>
             </div>
 
+            <!-- Bootstrap Modal -->
+<div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="couponModalLabel">Available Coupons</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="couponDetails">
+                <!-- Coupon details will be inserted here -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>COUPON CODE</th>
+                            <th>DISCOUNT</th>
+                            <th>MINIMUM AMOUNT</th>
+                        </tr>                            
+                    </thead> 
+                    <tbody>
+                        <% coupen.forEach((cpn) => { %>
+                            <tr>
+                                <td><%= cpn.code %></td>
+                                <td><%= cpn.discountPercentage %> %</td>
+                                <td><%= cpn.minimumPurchaseAmount %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>   
+                </table>
+                
+                
+               
+            </div>
+        </div>
+    </div>
+</div>
             
             <!-- Order Summary -->
             <div class="order-summary">
                 <h4>Order Summary</h4>
                 <% cart.items.forEach((item) => { %> 
-                    <p><%= item.product.product_name %> - ₹<%= item.product.product_sale_price %></p>
+                    <p><%= item.product.product_name %> - ₹<%= item.product.product_sale_price * item.quantity %></p>
                     <% }); %>
 
 
@@ -301,6 +348,8 @@ async function removeCoupen(price){
     console.log('function is going on',price)
     const applyButton = document.querySelector('.coupen_session button');
     const couponField = document.getElementById('coupen');
+    const coupon = document.getElementById('coupen').value;
+
 
     couponField.value = '';
     applyButton.innerText = 'Apply Coupon';
@@ -311,7 +360,7 @@ async function removeCoupen(price){
         headers:{
             'Content-Type':'application/json'
         },
-        body:JSON.stringify({price:price})
+        body:JSON.stringify({price:price,couponCode:coupon})
     })
 
     if(response.ok){
