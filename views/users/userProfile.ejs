@@ -1,6 +1,6 @@
 <%-include ('../layouts/user_header') %>
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
     body {
         background-color: #f4f4f4;
@@ -83,6 +83,20 @@
 </head>
 <body>
 <div class="container profile-container">
+
+    <script> 
+        <% if (typeof message !== 'undefined' && message) { %>
+            Swal.fire({
+                title: '<%= alertType === "success" ? "Success" : "Error" %>',
+                text: '<%= message %>',
+                icon: '<%= alertType %>',
+                confirmButtonText: 'OK'
+            });
+        <% } %>
+
+    </script>
+  
+
     <!-- Sidebar -->
     <div class="profile-sidebar">
         <h3>Account</h3>
@@ -152,11 +166,11 @@
         </form>
         <br>
 
-        <form action='/pass_edit' method="post">
+        <form action='/pass_edit' method="post" id="passwordForm" >
 
 
 
-            <div class="section-title">Change Password</div>
+            <div class="section-title"   >Change Password</div>
 
             <div class="row">
                 <div class="col-md-6 form-group">
@@ -166,7 +180,15 @@
                 <div class="col-md-6 form-group">
                     <label for="newPassword">New Password</label>
                     <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="New Password">
+                    <div class="error"  id="newPasswordError"> </div>
                 </div>
+
+                <div class="col-md-6 form-group">
+                    <label for="confirmNewPassword"> Confirm New Password</label>
+                    <input type="password" id="confirmNewPassword" name="confirmNewPassword" class="form-control" placeholder="Confirm New Password">
+                    <div class="error"  id="confirmNewPasswordError"> </div>
+                </div>
+
             </div>
 
             <button type="submit" class="btn btn-primary">Update</button>
@@ -184,5 +206,24 @@
 </html>
 
 
+
+<!-- <script>
+    document.getElementById('passwordForm').addEventListener('submit', function (event) {
+        const newPassword = document.getElementById('newPassword').value.trim();
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
+
+        let isValid = true; // Declare `let` explicitly
+
+        if (confirmNewPassword !== newPassword) {
+            document.getElementById('confirmNewPasswordError').innerText = 'Passwords do not match.';
+            isValid = false;
+        }
+
+        if (!isValid) {
+            event.preventDefault(); // Prevent form submission if validation fails
+        }
+        alert('password changed')
+    });
+</script> -->
 
 <%-include ('../layouts/user_footer') %>

@@ -54,6 +54,12 @@ router.post('/delete/:id',adminController.delete_Coupen)
 router.get('/salesReport',adminController.salesReport)
 router.get('/sales-report',adminController.sales_report)
 
+//**** download sales Report */
+
+router.get('/sales-report/download/pdf',adminController.pdf)
+router.get('/sales-report/download/excel',adminController.excel)
+
+
 
 
 

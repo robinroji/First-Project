@@ -47,6 +47,16 @@
         </tr>
       </table>
     </div>
+
+
+    <div class="mb-4">
+      <label for="format" class="form-label">Format:</label>
+      <select id="format" class="form-select">
+          <option value="pdf">PDF</option>
+          <option value="xlsx">Excel</option>
+      </select>
+      <button id="btnDownload" class="btn btn-dark mt-2">Download Report</button>
+  </div>
     
 
     <!-- Sales Report Table -->
@@ -81,11 +91,27 @@
   </div>
  
   <script>
+
+  document.getElementById('btnDownload').addEventListener('click', () => {
+  const format = document.getElementById('format').value;
+  if (format === 'pdf') {
+    window.location.href = '/admin/sales-report/download/pdf';
+  } else if (format === 'xlsx') {
+    window.location.href = '/admin/sales-report/download/excel';
+  }
+  });
+
+
+
+
     document.addEventListener("DOMContentLoaded", function () {
       // Sorting Buttons
       const sortButtons = document.querySelectorAll(".sort-btn");
       const filterBtn = document.getElementById("filter-btn");
       const filterDateInput = document.getElementById("filter-date");
+      const btnDownload = document.getElementById('btnDownload');
+      const formatSelect = document.getElementById('format');
+            
 
       sortButtons.forEach(button => {
         button.addEventListener("click", () => {

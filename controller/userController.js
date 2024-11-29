@@ -614,7 +614,9 @@ const personalEdit = async (req, res) => {
         console.log('personal is', user);
         
         
-        res.render('userProfile', { user });
+        return  res.render('userProfile',{user,
+            message: 'Details saved',
+            alertType: 'success'}) 
         
     } catch (error) {
         console.log(error.message);
@@ -635,7 +637,9 @@ const contactEdit = async(req,res)=>{
         )
         console.log('this is the profiel user',user)
 
-            res.render('userProfile',{user})
+        return  res.render('userProfile',{user,
+            message: 'Contact Updated',
+            alertType: 'success'}) 
         
 
     } catch (error) {
@@ -659,13 +663,50 @@ const passEdit = async(req,res)=>{
             console.log('passs is',password);
 
             const currentPass = req.body.oldPassword
-            const passMatch = await bcrypt.compare(currentPass,password)
+            const passMatch =  await bcrypt.compare(currentPass,password)
             console.log('route is working till passMatch',passMatch);
             
-            if(passMatch){
-                console.log('loged intothe passmatch ');
+           
+            
+
+            if(!passMatch){
+                console.log('not current password ');
+               return  res.render('userProfile',{user,
+                    message: 'Current Password is not Matching',
+                    alertType: 'error'}) 
+
+
+            }
+
+
+            if(req.body.newPassword.length<8){
+                return  res.render('userProfile',{user,
+                    message:'Passwords should be atleast 8 letters',
+                    alertType:'error'
+
+            })
+        }
+
+       
+
+            if(req.body.newPassword!== req.body.confirmNewPassword){
+                console.log(req.body.newPassword);
+                console.log(req.body.confirmNewPassword);
+
+
+                return  res.render('userProfile',{user,
+              message:'Passwords are not matching',
+              alertType:'error'
+                  }
+             
+          )
+      }
+            
+            
+            else{
                 
 
+                
                 const hashedPass = await bcrypt.hash(req.body.newPassword,10)
 
                 const updatedPass = await User.findByIdAndUpdate(req.session.user_id,{
@@ -675,12 +716,16 @@ const passEdit = async(req,res)=>{
                 )
             
                 
-            }else{
-                console.log('the passmatch is not going');
+            
+             
+            res.render('userProfile',{user,
+                message: 'Password changed',
+                alertType: 'success'}) 
+                req.session.destroy()
                 
             }
-             
-            res.render('userProfile',{user}) 
+                
+
         }
 
       
@@ -1075,7 +1120,7 @@ const deleteOrder = async (req, res) => {
 const loadWishList = async (req, res) => {
     try {
         const products = await WishList.find({ user: req.session.user_id }).populate('product');
-        console.log('ll',products._id)
+        console.log('the products is ',products)
        
         res.render('wishList', { product: products});
     } catch (error) {
@@ -1324,6 +1369,7 @@ const wallet = async(req,res)=>{
     try {
         const wallet = await Wallet.findOne({user:req.session.user_id})
         res.render('wallet',{wallet})
+        console.log('the wallet iss ',wallet)
         
     } catch (error) {
         console.log(error.message);

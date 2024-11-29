@@ -424,12 +424,18 @@ const acceptReturn = async(req,res)=>{
          
          const amount = orderAmount?.totalAmount
          const order = await Order.findOneAndUpdate({_id:orderId}, { orderStatus: 'Return Approved'}, { new: true });
+         console.log('The order iss',order)
          const wallet = await Wallet.findOneAndUpdate(
             { user: order.user },
-            { $inc: { balance: amount } },
+            { $inc: { balance: amount }, },
             { new: true }
         );
-        
+
+        wallet.transactions.forEach((item)=>{
+            item.orderId=order._id
+
+    })
+        await wallet.save()
         res.json({success:true})
 
         
