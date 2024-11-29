@@ -76,10 +76,47 @@
                     </td>
                     <td>
                         <form action=" /deleteOrder/<%= order._id %>" method="POST" style="display: inline;">
-                            <button class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this order?')">
-                                <i class="fas fa-trash"></i> Cancel
-                            </button>
-                        </form>
+                                <% if (order.orderStatus === 'Delivered' || order.orderStatus == 'Return Initiated'|| order.orderStatus =='Return Approved') { %>
+                                    <button
+                                    <% if (order.orderStatus === 'Return Initiated') { %> 
+                                        disabled 
+                                    <% } %>  
+
+                                    <% if (order.orderStatus === 'Return Approved') { %> 
+                                        disabled 
+                                    <% } %>
+
+                                    <% if (order.orderStatus === 'Return Rejected') { %> 
+                                        disabled 
+                                    <% } %>
+
+                                    class="btn btn-danger" onclick="return  returnproduct(event,'<%= order._id %>'), confirm('Are you sure you want to return this order?')" id="return-btn" >
+                                        <i class="fas fa-trash"></i> Return
+                                    </button>
+                                <% } else { %>
+                                    <button class="btn btn-danger" 
+                                        <% if (order.orderStatus === 'cancelled') { %> 
+                                            disabled 
+                                        <% } %> 
+
+                                        <% if (order.orderStatus === 'Return Initiated') { %> 
+                                            
+                                            disabled
+                                        <% } %> 
+
+                                        <% if (order.orderStatus === 'Return Rejected') { %> 
+                                            disabled 
+                                        <% } %>
+
+                                        onclick="return confirm('Are you sure you want to cancel this order?')">
+                                        <i class="fas fa-trash"></i> Cancel
+                                    </button>
+                                <% } %>
+                                
+                            </form>
+                            
+                           
+                           
                     </td>
                 </tr>
         
@@ -106,8 +143,94 @@
         </table>
     </div>
 
+    <!-- Modal for Return Reasons -->
+<div class="modal fade" id="returnReasonModal" tabindex="-1" aria-labelledby="returnReasonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="returnReasonModalLabel">Select a Reason for Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="returnReasonForm">
+                    <div class="mb-3">
+                        <label for="returnReason" class="form-label">Choose a reason</label>
+                        <select class="form-control" id="returnReason" name="returnReason" required>
+                            <option value="">Select a reason</option>
+                            <option value="Damaged Item">Damaged Item</option>
+                            <option value="Incorrect Item">Incorrect Item</option>
+                            <option value="Size Issue">Size Issue</option>
+                            <option value="No Longer Needed">No Longer Needed</option>
+                            <option value="Other">Other</option>
+                        </select>
+                   
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="submitReturnReason" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </body>
 </html>
+
+<script>
+    async function returnproduct(event, OrderId) {
+        event.preventDefault();
+        console.log(OrderId);
+
+        // Show the return reason modal
+        const returnReasonModal = new bootstrap.Modal(document.getElementById('returnReasonModal'));
+        returnReasonModal.show();
+
+        // Handle the selection of the return reason
+        const reasonSelect = document.getElementById('returnReason');
+
+        // Submit the return reason
+        document.getElementById('submitReturnReason').addEventListener('click', async function() {
+            const returnReason = reasonSelect.value;
+
+            if (!returnReason) {
+                alert('Please select a reason for the return.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/returnOrder/' + OrderId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        OrderId,
+                        returnReason: returnReason // Send the selected reason
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Disable the return button and reload the page
+                    document.getElementById('return-btn').disabled = true;
+                    window.location.reload();
+                } else {
+                    alert('Something went wrong. Please try again.');
+                }
+
+                // Hide the modal
+                returnReasonModal.hide();
+                document.getElementById('returnReasonForm').reset(); // Reset the form
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    }
+</script>
 
 <%- include("../layouts/user_footer.ejs") %>

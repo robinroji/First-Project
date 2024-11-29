@@ -117,38 +117,39 @@ user_route.post('/update-quantity',auth.isLogin,cartController.qt_increase)
 
 
 //** Check Out */
-user_route.get('/checkOut',userController.loadCheckout)
-user_route.post('/orderAddress',userController.orderAddress)
-user_route.get('/edit_editAddress/:id',userController.load_Editaddress)
-user_route.post('/edit_address',userController.edit_Editaddress)
-user_route.post('/select_address/:id',userController.select_address)
-user_route.post('/payment/:id',userController.payment)
-user_route.get('/load_checkout_addAddress',userController.load_checkout_addAddress)
-user_route.post('/checkout_addAddress',userController.checkout_addAddress)
+user_route.get('/checkOut',auth.isLogin,userController.loadCheckout)
+user_route.post('/orderAddress',auth.isLogin,userController.orderAddress)
+user_route.get('/edit_editAddress/:id',auth.isLogin,userController.load_Editaddress)
+user_route.post('/edit_address',auth.isLogin,userController.edit_Editaddress)
+user_route.post('/select_address/:id',auth.isLogin,userController.select_address)
+user_route.post('/payment/:id',auth.isLogin,userController.payment)
+user_route.get('/load_checkout_addAddress',auth.isLogin,userController.load_checkout_addAddress)
+user_route.post('/checkout_addAddress',auth.isLogin,userController.checkout_addAddress)
 
 
 //***** Order ****/
 user_route.post('/placeOrder',auth.isLogin,userController.placeOrder)
 user_route.get('/orders',auth.isLogin,userController.loadOrders)
-user_route.get("/Order_DetailPage/:id",userController.OrderDetailPage)
-user_route.post('/updateOrder/:id',userController.updateOrder)
-user_route.post('/deleteOrder/:id',userController.deleteOrder)
-user_route.get('/orderPlaced',userController.orderPlaced)
+user_route.get("/Order_DetailPage/:id",auth.isLogin,userController.OrderDetailPage)
+user_route.post('/updateOrder/:id',auth.isLogin,userController.updateOrder)
+user_route.post('/deleteOrder/:id',auth.isLogin,userController.deleteOrder)
+user_route.get('/orderPlaced',auth.isLogin,userController.orderPlaced)
+user_route.post('/returnOrder/:id',auth.isLogin,userController.retrunOrder)
 
 //***** WishList *********/
 user_route.get('/wishList',auth.isLogin,userController.loadWishList)
 user_route.get('/move_to_wishList/:id',auth.isLogin,userController.wishlist)
-user_route.post('/remove_product/:id',userController.remove_product)
-user_route.get('/add_toCart/:id',userController.add_toCart)
+user_route.post('/remove_product/:id',auth.isLogin,userController.remove_product)
+user_route.get('/add_toCart/:id',auth.isLogin,userController.add_toCart)
 
 //***  Payment ************/
 user_route.post('/razorPay',auth.isLogin,userController.razorPayment)
 user_route.post('/verify_razorPay',auth.isLogin,userController.verify_razorPay)
 
 //** Coupen ********/
-user_route.post('/select_Coupen',userController.selectCoupen)
-user_route.post('/applyCoupen',userController.applyCoupen)
-user_route.post('/returnAmount',userController.returnAmount)
+user_route.post('/select_Coupen',auth.isLogin,userController.selectCoupen)
+user_route.post('/applyCoupen',auth.isLogin,userController.applyCoupen)
+user_route.post('/returnAmount',auth.isLogin,userController.returnAmount)
 
 //*** Wallet *****/
 user_route.get('/wallet',userController.wallet)

@@ -97,18 +97,18 @@
                         <% } %>
 
                         <td>
-                            <img src="/newfile/<%= item.images %>" alt="Product Image">
+                            <img src="/newfile/<%= item.images[0] %>" alt="Product Image">
                         </td>
 
                         <td><%= item.productName %></td>
 
                         <td><%= item.quantity %></td>
 
-                        <td><%= item.salePrice %></td>
+                        <td><%= item.price %></td>
 
                         <% if (itemIndex === 0) { %>
                             <!-- Only show payment and actions once for the entire order -->
-                            <td rowspan="<%= order.items.length %>"><%= order.payment %></td>
+                            <td rowspan="<%= order.items.length %>"><%= order.paymentMethod %></td>
                             <td rowspan="<%= order.items.length %>">
                                 <a href="/admin/edit_order/<%= order._id %>", id="edit" class="btn"><i class="fas fa-edit"></i></a>
                                 <span> </span>

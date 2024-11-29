@@ -16,29 +16,26 @@
                 <!-- Search Form -->
                 <form action="/shop?q=<% product %>" method="get" role="search"  id="search" class="mb-4">
                     <div class="input-group">
-                        <input type="search" name="q" class="form-control rounded-pill" placeholder="Search product" style="border-radius: 20px 0 0 20px;">
+                        <input type="search" name="q" class="form-control rounded-pill" placeholder="<%= searchQuery %> " style="border-radius: 20px 0 0 20px;">
                         <input type="hidden" name="catId" value="<% category._id %>">
                         <button type="submit" class="btn btn-outline-secondary" style="border-radius: 0 20px 20px 0; background-color: rgba(3, 14, 47, 0.252); border: none;">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
-                    <% if (searchQuery) { %>
-                        <h5>You searched for "<%= searchQuery %>"</h5>
-                    <% } %>
                     
                 </form>
             
                 <!-- Category Filter -->
                 <h5 class="filter-title">Category</h5>
-<ul class="list-group list-unstyled">
-    <% category.forEach((category) => { %>
-        <li class="mb-2">
-            <a href="/shop?category=<%= category._id %>" class="text-decoration-none text-dark">
-                <i class="bi bi-chevron-right me-1"></i><%= category.name %>
-            </a>
-        </li>
-    <% }) %>
-</ul>
+                <ul class="list-group list-unstyled">
+                    <% category.forEach((category) => { %>
+                        <li class="mb-2">
+                            <a href="/shop?category=<%= category._id %>" class="text-decoration-none text-dark">
+                                <i class="bi bi-chevron-right me-1"></i><%= category.name %>
+                            </a>
+                        </li>
+                    <% }) %>
+                </ul>
 
                     <button type="reset" onclick="window.location.href='/shop'" class="btn btn-outline-secondary btn-sm mt-2">Clear Category</button>
                 </ul>
@@ -48,6 +45,8 @@
                     <h5 class="fw-bold mb-3">Sort by</h5>
                     <form action="/shop" method="GET">
                         <div class="mb-3">
+                            <input type="hidden" name="category" value="<%= currfilters.category || '' %>">
+                            <input type="hidden" name="q" value="<%= searchQuery || '' %>">
                             <select class="form-select form-select-sm" aria-label="Sort Options" name="sort">
                                 <option value="" disabled selected>Sort by</option>
                                 <option value="price_low_high" <%= sortOption === 'price_low_high'? 'selected': '' %>>Price: Low to High</option>
@@ -60,7 +59,7 @@
                         <button type="submit" class="btn btn-outline-primary btn-sm w-100">
                             <i class="bi bi-funnel-fill me-2"></i>Apply Filters
                         </button>
-                    </form> 
+                    </form>
                 </div>
             </div>
             
@@ -114,18 +113,27 @@
     <!--  pagination -->
 
     <div class="pagination-area mt-15 mb-50">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <!-- Pagination elements -->
-                <div class="pagination-container d-flex justify-content-end ">
-                    <ul class="pagination">
-            
-                            <% for(let i=0;i<totalPages;i++){%>
-                                <a class="page-link" href="?page=<% i %> <%= i %>"></a>
-                          <%}%>
-                                
-                     </ul>
-                     </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <% if (currentPage > 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>&q=<%= searchQuery || '' %>&category=<%= currfilters.category || '' %>&sort=<%= sortOption || '' %>">Previous</a>
+                    </li>
+                <% } %>
+    
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&q=<%= searchQuery || '' %>&category=<%= currfilters.category || '' %>&sort=<%= sortOption || '' %>">
+                            <%= i %>
+                        </a>
+                    </li>
+                <% } %>
+    
+                <% if (currentPage < totalPages) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>&q=<%= searchQuery || '' %>&category=<%= currfilters.category || '' %>&sort=<%= sortOption || '' %>">Next</a>
+                    </li>
+                <% } %>
             </ul>
         </nav>
     </div>
@@ -136,10 +144,11 @@
 
 <!-- JavaScript to Filter Products -->
 <script>
+    
     function filterProducts() {
         const selectedCategory = document.getElementById('categoryFilter').value;
         const productItems = document.querySelectorAll('.product-item');
-
+        
         productItems.forEach(item => {
             const itemCategory = item.getAttribute('data-category');
             if (selectedCategory === 'all' || itemCategory === selectedCategory) {

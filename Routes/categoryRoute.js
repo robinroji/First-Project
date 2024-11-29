@@ -15,19 +15,29 @@ router.set('view engine','ejs');
 router.set('views','./views/admin');
 
 //** CATEGORY PAGE **/
-router.get('/categoryPage',category_controller.categoryPage)
+router.get('/categoryPage',admin_auth.isLogin,category_controller.categoryPage)
 
 //** ADD CATEGORY **/
-router.get('/add_category',category_controller.load_addCategory)
-router.post('/add_category',category_controller.addCategory)
+router.get('/add_category',admin_auth.isLogin,category_controller.load_addCategory)
+router.post('/add_category',admin_auth.isLogin,category_controller.addCategory)
 
 //** EDIT CATEGORY **/
-router.get('/edit_category/:id',category_controller.load_editCategory)
-router.post('/edit_category/:id',category_controller.editCategory)
+router.get('/edit_category/:id',admin_auth.isLogin,category_controller.load_editCategory)
+router.post('/edit_category/:id',admin_auth.isLogin,category_controller.editCategory)
 
 //** DELETE CATEGORY **/
-router.post('/block_category/:id',category_controller.block_category);
-router.post('/unblock_category/:id',category_controller.unblock_category);
+router.post('/block_category/:id',admin_auth.isLogin,category_controller.block_category);
+router.post('/unblock_category/:id',admin_auth.isLogin,category_controller.unblock_category);
+
+//**** CATEGORY OFFER */
+
+router.get('/loadOffer',admin_auth.isLogin,category_controller.loadOffer)
+router.post('/createOffer',admin_auth.isLogin,category_controller.createOffer)
+
+router.post('/applyCoupen',admin_auth.isLogin,category_controller.applyCoupen)
+router.post('/delete_offer',admin_auth.isLogin,category_controller.delete_offer)
+
+
 
 
 

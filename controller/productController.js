@@ -3,44 +3,48 @@ const Category = require('../model/categoryModel');
 const fs = require('fs');
 const path = require('path')
 const ProductOffer = require('../model/productOfferModel')
+const ReturnProducts = require('../model/returnOrderModel')
+const Order = require('../model/orderModel')
+const Wallet = require('../model/walletModel')
 
-const addProduct = async(req,res)=>{
-    // console.log('add product is comming',req.body.pro_name);
 
-    
-try {
-    
-      let img = []
-      req.files.forEach(image => {
-    img.push(image.filename)        
-      });
-      console.log('img is',img);
-    
-        const lastproduct = await Product.findOne().sort({sl_number:-1})
-        const sl_number = await lastproduct? lastproduct.sl_number+1 :1
+const addProduct = async (req, res) => {
+    try {
+        let img = [];
+        req.files.forEach((image) => {
+            img.push(image.filename);
+        });
 
-      const product = new Product({
-        product_name:req.body.pro_name,
-        product_regular_price:  req.body.pro_reg_price,
-        product_category:req.body.pro_category,
-        product_description:req.body.pro_description,
-        product_quantity:req.body.pro_quantity,
-        product_image:img,
-        product_sale_price:req.body.pro_sale_price,
-        product_brand:req.body.pro_brand,
-        sl_number:sl_number
+        const lastproduct = await Product.findOne().sort({ sl_number: -1 });
+        const sl_number = lastproduct ? lastproduct.sl_number + 1 : 1;
 
-      })
+        const product = new Product({
+            product_name: req.body.pro_name,
+            product_regular_price: req.body.pro_reg_price,
+            product_category: req.body.pro_category,
+            product_description: req.body.pro_description,
+            product_quantity: req.body.pro_quantity,
+            product_image: img,
+            product_sale_price: req.body.pro_sale_price,
+            product_brand: req.body.pro_brand,
+            sl_number: sl_number,
+        });
 
-      await product.save();
-      res.redirect('/product/productPage')
+        const catName = await Category.findOne({ _id: product.product_category });
+        if (catName) {
+            const offer = (product.product_sale_price * catName.offerAmount) / 100;
+            product.product_sale_price -= offer;
+        }
 
-} catch (error) {
-    res.redirect('/errorpage')
-    console.log(error.message);   
-}
+        await product.save();
 
-}
+        return res.status(200).json({ success: true, message: 'Product added successfully.' });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ success: false, message: 'An error occurred while adding the product.' });
+    }
+};
+
 
 //*****  PRODUCT GET PAGE */
 
@@ -92,65 +96,72 @@ const productPage = async(req,res)=>{
 }
 
 //********PRODUCT EDIT PAGE *********///
+const load_edit_page = async (req, res) => {
+    console.log('Edit page is coming');
 
-const load_edit_page = async(req,res)=>{
-    console.log('edit page is comming');
-    
     try {
+        // Fetch all product offers
+        const productOffer = await ProductOffer.find();
         
-        const productOffer = await ProductOffer.find()
-        // console.log('available productoffer is ',productOffer)
-        const product = await Product.findById(req.params.id).populate
-        ('product_category')
-        // console.log('product is',product);
+        // Fetch the product by ID and populate category
+        const product = await Product.findById(req.params.id).populate('product_category');
 
-
-        const category= await  Category.find();
-        
-        if(!product){
-            console.log('no product found ');
-            
-        }
-        let offerxist = false
-        for(let i=0;i<productOffer.length;i++){
-                
-            if( productOffer[i].usedBy.includes(product._id)){
-                offerxist = true
-            }
-
+        // If product doesn't exist, redirect to error page
+        if (!product) {
+            console.log('No product found');
+            return res.redirect('/errorpage');
         }
 
-      return res.render('edit-product',{offerxist,product,category,productOffer})
+        // Fetch categories for the select dropdown or related fields
+        const category = await Category.find();
+        
+        // Check if any product offers are associated with the product
+        const offerxist = productOffer.some(offer => offer.usedBy.includes(product._id));
+
+        // Render the edit-product page with necessary data
+        return res.render('edit-product', { offerxist, product, category, productOffer });
         
     } catch (error) {
-        console.log(error.message);
-        return res.redirect('/errorpage')
-        
-        
+        console.log('Error occurred:', error.message);
+        // Redirect to an error page if something goes wrong
+        return res.redirect('/errorpage');
     }
-}
+};
 
 //********** UPDATE THE PRODUCT */
+
 const update_product = async (req, res) => {
     try {
+        let img = [];
+        
+        // Check if cropped image data is sent
+        if (req.body.croppedImage) {
+            // Decode the base64 image data
+            const base64Data = req.body.croppedImage.replace(/^data:image\/\w+;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            // Define a unique filename for the cropped image
+            const filename = `cropped_${Date.now()}.jpg`;
+
+            // Save the cropped image to the public/uploads folder
+            const filePath = path.join(__dirname, '../public/uploads', filename);
+            fs.writeFileSync(filePath, buffer);
+
+            img.push(filename);
+        }
+
+        // Handle new image uploads via req.files
+        req.files.forEach((file) => {
+            img.push(file.filename);
+        });
+
         // Find the product by ID
         const updateProduct = await Product.findById(req.params.id);
-        console.log(updateProduct);
-        
         if (!updateProduct) {
             return res.status(404).send('No product found');
         }
 
-        // Handle new image uploads
-        const newImages = req.files ? req.files.map(file => file.filename) : [];
-        console.log(newImages);
-        
-        const updatedProductImages = newImages.length > 0 ? newImages : updateProduct.product_image;
-        console.log("2",updatedProductImages);
-        console.log(req.body.pro_category);
-        
-        
-        // Update the product
+        // Update the product with new details and images
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
             {
@@ -159,28 +170,25 @@ const update_product = async (req, res) => {
                 product_category: req.body.pro_category,
                 product_description: req.body.pro_description,
                 product_quantity: req.body.pro_quantity,
-                product_image: updatedProductImages, // Use the correct variable here
+                product_image: img.length > 0 ? img : updateProduct.product_image,
                 product_sale_price: req.body.pro_sale_price,
                 product_brand: req.body.pro_brand
             },
             { new: true }
         );
 
-        console.log(updatedProduct);
-    
-
-
         if (!updatedProduct) {
             return res.status(404).send('No product found');
         }
 
-        // Redirect to the product page
+        // Redirect to the product page after updating
         return res.redirect('/product/productPage');
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         return res.redirect('/errorpage');
     }
 };
+
 
 
 //***** GET DELETE */
@@ -384,10 +392,75 @@ const removeOffer = async(req,res)=>{
     }
 }
 
+//***    returnProducts  */
+
+const returnProducts = async(req,res)=>{
+    try {
+        const order = await ReturnProducts.find()
+
+        res.render('returnProductPage',{order})
+        
+    } catch (error) {
+        console.log(error.message)
+        return res.redirect('/errorPage')
 
 
+        
+    }
+}
 
+//***********    acceptReturn    ****** */
 
+const acceptReturn = async(req,res)=>{
+    try {
+
+        const {orderId} = req.body
+        console.log('the i',orderId)
+
+        const trial = await ReturnProducts.findOne({order:orderId})
+
+         const acceptReturn =  await ReturnProducts.findOneAndUpdate({order:orderId},{returnProductStatus:'ReturnApproved'},{new:true})
+         const orderAmount = await Order.findOne({_id:orderId},{totalAmount:1,_id:0})
+         
+         const amount = orderAmount?.totalAmount
+         const order = await Order.findOneAndUpdate({_id:orderId}, { orderStatus: 'Return Approved'}, { new: true });
+         const wallet = await Wallet.findOneAndUpdate(
+            { user: order.user },
+            { $inc: { balance: amount } },
+            { new: true }
+        );
+        
+        res.json({success:true})
+
+        
+    } catch (error) {
+        console.log(error.message)
+        return res.redirect('/errorPage')
+        
+    }
+}
+
+//*********** rejectOrder    ********* */
+
+const rejectOrder =async(req,res)=>{
+    try {
+        const {orderId} = req.body
+
+        const RejectReturn =  await ReturnProducts.findOneAndUpdate({order:orderId},{returnProductStatus:'returnRejected'},{new:true})
+
+        const order = await Order.findOneAndUpdate({_id:orderId}, { orderStatus: 'Return Rejected'}, { new: true });
+
+        res.json({success:true})
+        console.log('the order status is ',order)
+        console.log('the rejectREturn is ',RejectReturn)
+        
+        
+    } catch (error) {
+        console.log(error.messge)
+        return res.redirect('/errorPage')
+        
+    }
+}
 
 
 
@@ -424,7 +497,9 @@ module.exports ={
     load_productOffer,
     productOffer,
     applyProducOffer,
-    removeOffer
-    
+    removeOffer,
+    returnProducts,
+    acceptReturn,
+    rejectOrder
     
 }

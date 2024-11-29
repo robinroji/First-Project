@@ -22,7 +22,36 @@
                     <input type="text" name="description" id="description" value="<%= category.description %>" placeholder="Category Description" class="form-control">
                     <div id="description-error" class="text-danger" style="display: none;">Category description is required.</div>
                 </div>
-               
+
+                <div>
+                    <button id="remove-btn" onclick="removeOffer(event,'<%=category._id%>')">Remove Offer</button>
+                </div>
+                <br>
+
+                
+                <div class="row">
+                    <% categoryOffer.forEach((item) => {%> 
+
+
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="<%= item.imageUrl %>" class="card-img-top" alt="<%= item.name %>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= item.name %></h5>
+                                    <p class="card-text"><strong>Offer percentage:<%= item.discountPercentage%></strong></p>
+                                    <p class="card-text"><strong>Offer from :<%= item.startDate %></strong></p>
+                                    <p class="card-text"><strong>Offer Expires :<%= item.expiryData %></strong></p>
+                                    <p class="card-text"><strong>Description:<%= item.description %></strong></p>
+
+                                    <button  id="apply-offer" class="offer-btn" type="button" onclick="applycoupen(event, '<%= item._id %>','<%= category._id %>')">Apply Offer</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    <%  }) %>
+                </div>  
+                
+
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary">Update Category</button>
                 </div>
@@ -34,6 +63,110 @@
 <%- include('../layouts/admin_footer.ejs') %>
 
 <script>
+
+
+
+
+
+
+async function removeOffer(event, category_id) {
+        console.log('clicked');
+        event.preventDefault();
+        event.stopPropagation();
+    
+        try {
+            // Swal.fire({
+            //     title: 'Loading...',
+            //     text: 'Please wait while we process your request.',
+            //     allowOutsideClick: false, // Prevent closing on outside click
+            //     didOpen: () => {
+            //         Swal.showLoading();
+            //     }
+            // });
+    
+            const response = await fetch('/category/delete_offer', {
+                method: 'post',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category_id})
+            });
+    
+            if (!response.ok) throw new Error('Response error');
+    
+            const data = await response.json();
+            Swal.fire({
+                title: 'Success',
+                text: 'Offer removed successfully!',
+                icon: 'success',
+                allowOutsideClick: false,
+            });
+
+            const buttons = document.querySelectorAll('.offer-btn');
+    
+    // Disable all buttons
+    buttons.forEach(button => {
+        button.disabled= false;
+    });
+
+    
+            if (!data.success) throw new Error(data.message || 'Image deletion error');
+            
+           
+        } catch (error) {
+            Swal.close();
+            console.log(error);
+        }
+    }
+
+
+
+
+async function applycoupen(event, categoryOfferId,categoryId) {
+    event.preventDefault(); // Prevent the default behavior (not needed for type="button")
+    console.log('Coupon button is applying for category ID:', categoryOfferId);
+    const response = await fetch('/category/applyCoupen',{
+        method:'post',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({categoryOfferId,categoryId})
+    })
+    console.log('response error')
+    console.log(response)
+    const data = await response.json()
+    console.log(data)
+    // const offerAmount = data.offerDiscount
+
+    console.log('offer iss',data.success)
+
+    const buttons = document.querySelectorAll('.offer-btn');
+    
+    // Disable all buttons
+    buttons.forEach(button => {
+        button.disabled= true;
+    });
+
+    if(data){
+        console.log('applied')
+        Swal.fire({
+                title: 'Success',
+                text: 'Offer applied successfully!',
+                icon: 'success',
+                allowOutsideClick: false,
+            });
+    }
+    
+}
+
+
+
+
+
+
+
+
+
+
+// .........VALIDATION.............////
     function validateForm() {
         // Get input values
         const name = document.getElementById('name').value.trim();

@@ -2,29 +2,29 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const ObjectId = Schema.Types.ObjectId
 
-// const walletTransactions = new Schema({
-//     orderId: {
-//         type: ObjectId,
-//         ref: 'Order',
-//         required: false
-//     },
-//     amount: {
-//         type: Number,
-//         required: true
-//     },
-//     status: {  
-//         type: String,
-//         enum: [ 'pending', 'success', 'failed'],
-//         default: 'pending'
-//     },
-//     type:{
-//         type:String,
-//         enum: ['debit', 'credit'],
-//     },
-//     razorpaymentId:{
-//         type:String,
-//     },
-// }, { timestamps: true });
+const walletTransactions = new Schema({
+    orderId: {
+        type: ObjectId,
+        ref: 'Order',
+        required: false
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    status: {  
+        type: String,
+        enum: [ 'pending', 'success', 'failed'],
+        default: 'pending'
+    },
+    type:{
+        type:String,
+        enum: ['debit', 'credit'],
+    },
+    razorpaymentId:{
+        type:String,
+    },
+}, { timestamps: true });
 
 const walletSchema = new mongoose.Schema({
 
@@ -38,7 +38,7 @@ const walletSchema = new mongoose.Schema({
         required:true,
         default:0
     },
-    // transactions:[walletTransactions]
+    transactions:[walletTransactions]
 },{timestamps:true
 
 

@@ -1,6 +1,5 @@
 <%- include('../layouts/admin_header.ejs') %>
 
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,29 +13,33 @@
                 <h3>Add New Coupon</h3>
             </div>
             <div class="card-body">
-                <form action="/admin/add_Coupen" method="POST">
+                <form id="addCouponForm" action="/admin/add_Coupen" method="POST">
                     <!-- Coupon Code -->
                     <div class="mb-3">
                         <label for="couponCode" class="form-label">Coupon Code</label>
                         <input type="text" class="form-control" id="couponCode" name="couponCode" placeholder="Enter coupon code" required>
+                        <small class="text-danger d-none" id="couponCodeError">Coupon Code is required!</small>
                     </div>
 
                     <!-- Discount Percentage -->
                     <div class="mb-3">
                         <label for="discount" class="form-label">Discount Percentage (%)</label>
                         <input type="number" class="form-control" id="discount" name="discount" placeholder="Enter discount percentage" required min="1" max="100">
+                        <small class="text-danger d-none" id="discountError">Discount must be between 1 and 100!</small>
                     </div>
 
                     <!-- Expiry Date -->
                     <div class="mb-3">
                         <label for="expiryDate" class="form-label">Expiry Date</label>
                         <input type="date" class="form-control" id="expiryDate" name="expiryDate" required>
+                        <small class="text-danger d-none" id="expiryDateError">Please select a valid date!</small>
                     </div>
 
                     <!-- Minimum Order Value -->
                     <div class="mb-3">
                         <label for="minOrderValue" class="form-label">Minimum Order Value</label>
                         <input type="number" class="form-control" id="minOrderValue" name="minOrderValue" placeholder="Enter minimum order value" required>
+                        <small class="text-danger d-none" id="minOrderValueError">Minimum Order Value must be a positive number!</small>
                     </div>
 
                     <!-- Submit Button -->
@@ -47,8 +50,59 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById('addCouponForm');
+        form.addEventListener('submit', (e) => {
+            let valid = true;
+
+            // Validate Coupon Code
+            const couponCode = document.getElementById('couponCode');
+            const couponCodeError = document.getElementById('couponCodeError');
+            if (couponCode.value.trim() === '') {
+                valid = false;
+                couponCodeError.classList.remove('d-none');
+            } else {
+                couponCodeError.classList.add('d-none');
+            }
+
+            // Validate Discount Percentage
+            const discount = document.getElementById('discount');
+            const discountError = document.getElementById('discountError');
+            if (discount.value < 1 || discount.value > 100) {
+                valid = false;
+                discountError.classList.remove('d-none');
+            } else {
+                discountError.classList.add('d-none');
+            }
+
+            // Validate Expiry Date
+            const expiryDate = document.getElementById('expiryDate');
+            const expiryDateError = document.getElementById('expiryDateError');
+            const selectedDate = new Date(expiryDate.value);
+            const today = new Date();
+            if (selectedDate < today || isNaN(selectedDate.getTime())) {
+                valid = false;
+                expiryDateError.classList.remove('d-none');
+            } else {
+                expiryDateError.classList.add('d-none');
+            }
+
+            // Validate Minimum Order Value
+            const minOrderValue = document.getElementById('minOrderValue');
+            const minOrderValueError = document.getElementById('minOrderValueError');
+            if (minOrderValue.value <= 0) {
+                valid = false;
+                minOrderValueError.classList.remove('d-none');
+            } else {
+                minOrderValueError.classList.add('d-none');
+            }
+
+            if (!valid) {
+                e.preventDefault(); // Prevent form submission
+            }
+        });
+    </script>
 </body>
 </html>
-
 
 <%- include('../layouts/admin_footer.ejs') %>

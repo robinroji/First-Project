@@ -1,4 +1,6 @@
 const  Category = require('../model/categoryModel')
+const CategoryOffer = require('../model/categoryOfferModel')
+const Product = require('../model/productModel')
 
 
 
@@ -71,12 +73,14 @@ const load_editCategory = async (req,res)=>{
     
     
     try {
+        const categoryOffer = await CategoryOffer.find()
+        // console.log('cat offer is ',categoryOffer)
         const category = await Category.findById(req.params.id)    
     if(!category){
         console.log('category not found');
     }
 
-        return res.render('edit-category',{category})
+        return res.render('edit-category',{category,categoryOffer})
         
     } catch (error) {
         console.log(error.message);
@@ -136,6 +140,160 @@ const unblock_category = async(req,res)=>{
         
     }
 }
+//*****************     loadOffer        ************** */
+
+const loadOffer = async(req,res)=>{
+    try {
+        console.log('entering into the offerPage')
+        res.render('categoryOfferPage')
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+
+    }
+}
+const createOffer = async (req, res) => {
+    try {
+      const newOffer = new CategoryOffer({
+        name: req.body.categoryName,
+        discountPercentage: req.body.categoryDiscount,
+        startDate: req.body.startDate,
+        expiryData: req.body.expiryDate,
+        description: req.body.description,
+        status: req.body.status,
+      });
+  
+      await newOffer.save();
+  
+      res.redirect('/category/categoryPage');
+    } catch (error) {
+      console.log(error.message)
+      res.redirect('/errorPage')
+    }
+  };
+  
+  //*********  applyCoupen ********* */
+
+  const applyCoupen = async(req,res)=>{
+    try {
+
+        const {categoryOfferId,categoryId} = req.body
+        
+        
+        const categoryOffer = await CategoryOffer.findOne({_id:categoryOfferId})
+         const product = await Product.find({product_category:categoryId})
+        const category = await Category.findOne({_id:categoryId})
+
+        category.offerAmount=categoryOffer.discountPercentage;
+        category.save()
+        
+        console.log('the category offeramount is',category.offerAmount)
+        
+       product.forEach(async function(item){
+           console.log('old price',item.product_sale_price)
+            
+            const newSalePrice = item.product_sale_price*category.offerAmount/100
+            // console.log(newSalePrice)
+
+            const productUpdate = await  Product.findOneAndUpdate(
+                { product_category: categoryId ,_id:item._id},
+                { product_sale_price: item.product_sale_price - newSalePrice ,offerValue:newSalePrice},
+                { new: true } 
+               )        
+               
+               
+               console.log('new price',item.product_sale_price)
+              
+        })
+
+
+        return res.status(200).json({ success: true, message: 'Coupon applied successfully.' });
+
+
+        // category.offerAmount/100
+
+        //  console.log('offerAmount is',offerAmount)
+        //  const productUpdate = await Product.findOneAndUpdate(
+        //     { product_category: categoryId },
+        //     { product_sale_price: newSalePrice },
+        //     { new: true } 
+        //    )        
+           
+        //    console.log(productUpdate)
+
+        // console.log(product.product_sale_price)
+
+        //
+
+
+        // product.product_sale_price = product.product_sale_price-offerAmount
+        //  product.save()
+        // console.log(product.product_sale_price)
+
+
+
+
+        // console.log(req.body.categoryOfferId)
+        // console.log(req.body.categoryId)
+        // const category = await Category.findOne({_id:req.body.categoryId})
+        // console.log(category)
+        // const categoryOfferId = await CategoryOffer.findById(req.body.categoryOfferId);
+        // console.log(categoryOfferId);
+
+        // category.offerAmount = categoryOfferId.discountPercentage
+        // category.save()
+
+
+        
+
+
+
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+  }
+
+  const delete_offer = async(req,res)=>{
+
+      try {
+        const {category_id} = req.body
+        console.log(category_id)
+
+        const product= await Product.find({product_category:category_id})
+        console.log(product)
+
+        
+        product.forEach(async function(item){
+             
+ 
+             const productUpdate = await  Product.findOneAndUpdate(
+                 { product_category: category_id ,_id:item._id},
+                 { product_sale_price:item.product_sale_price+item.offerValue,offerValue:0},
+                 { new: true } 
+                )        
+                
+                
+                console.log('new price',item.product_sale_price)
+               
+         })
+
+         return res.status(200).json({ success: true, message: 'Coupon removed successfully.' });
+
+
+
+
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+  }
+
+
+
 
 module.exports = {
     categoryPage,
@@ -144,6 +302,10 @@ module.exports = {
     load_editCategory,
     editCategory,
     block_category,
-    unblock_category
+    unblock_category,
+    loadOffer,
+    createOffer,
+    applyCoupen,
+    delete_offer
 }
     

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema()
 
 const productSchema = new mongoose.Schema({
 
@@ -49,6 +50,10 @@ const productSchema = new mongoose.Schema({
         default:0,
         required:true
     },
+    offerValue:{
+        type:Number,
+        required:false
+    }
     
     
 

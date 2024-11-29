@@ -123,7 +123,7 @@
                     <tr>
                         <th>Date</th>
                         <th>Payment Method</th>
-                        <th>Delivery Address</th>
+                        <th>Order Status</th>
                         <th>Ordered Items</th>
                         <th>Update</th>
                     </tr>
@@ -139,12 +139,7 @@
 
                             <!-- Delivery Address -->
                             <td>
-                                <div class="order-info">
-                                    <p><strong>House Name:</strong> <%= order.shippingAddress.houseName %></p>
-                                    <p><strong>Location:</strong> <%= order.shippingAddress.location %></p>
-                                    <p><strong>State:</strong> <%= order.shippingAddress.state %></p>
-                                    <p><strong>Pin Code:</strong> <%= order.shippingAddress.pinCode %></p>
-                                </div>
+                                <%= order.orderStatus %>
                             </td>
 
                             <!-- Ordered Items -->

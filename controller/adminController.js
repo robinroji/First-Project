@@ -1,8 +1,9 @@
 const User = require('../model/userModel');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const moment = require('moment')
 const Order = require('../model/orderModel')
-const Coupen = require('../model/coupenModel')
+const Coupen = require('../model/coupenModel');
 
 //************** ADMIN  GET LOGIN  *************/
 
@@ -106,7 +107,7 @@ const logout = async(req,res)=>{
 
 const loadOrderList = async (req,res)=>{
     try {
-        const orders = await Order.find().populate('user');
+        const orders = await Order.find().populate('user').populate('shippingAddress')
         console.log('Orders with populated user: ', orders);
         
         
@@ -122,9 +123,13 @@ const editOrder = async(req,res)=>{
     try {
         console.log('edit o');
         const order = await Order.findById(req.params.id).populate('user');
-        console.log('the orders is ',order)
+        // console.log('the orders is ',order)
 
-        res.render('orderDetailPage',{order});
+        const orders = await Order.findById(req.params.id).populate('user').populate('shippingAddress')
+        console.log('the orders is ',orders.shippingAddress.houseName)
+
+
+        res.render('orderDetailPage',{order,orders});
        
         
     } catch (error) {
@@ -157,7 +162,7 @@ const updateStatus = async(req,res)=>{
         console.log(req.params.id);
         const id = req.params.id
 
-        const statusUpdate = await Order.findByIdAndUpdate(id,{$set:{status:req.body.status}},{new:true})
+        const statusUpdate = await Order.findByIdAndUpdate(id,{$set:{orderStatus:req.body.status}},{new:true})
         res.redirect(`/admin/edit_order/${id}`)
         
         
@@ -283,11 +288,85 @@ const delete_Coupen = async(req,res)=>{
 }
 
 
+///*******  salesReport   ******* */
+
+const salesReport = async(req,res)=>{
+    try {
+        let amount =0
+        console.log('getting the salesReport')
+        let salesData = await Order.find()
+        const orders = await Order.find()
+
+       let sum =0
+       let totalOffer = 0
+    orders.forEach((x)=>{
+        sum += x.totalAmount;
+        totalOffer+=x.couponDiscount;
+    })
+
+    length=orders.length
+
+        console.log(salesData)
+        res.render('salesReport',{salesData,sum,totalOffer,length})
+
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
+
+const sales_report = async(req,res)=>{
+
+    const { sort, filterDate } = req.query;
+
+    let filter = {};
+  
+    if (filterDate) {
+      const startOfDay = moment(filterDate).startOf('day').toDate();
+      const endOfDay = moment(filterDate).endOf('day').toDate();
+      filter.orderDate = { $gte: startOfDay, $lte: endOfDay };
+    } else if (sort === 'day') {
+      const today = moment().startOf('day');
+      const tomorrow = moment().endOf('day');
+      filter.orderDate = { $gte: today.toDate(), $lte: tomorrow.toDate() };
+    } else if (sort === 'week') {
+      const startOfWeek = moment().startOf('isoWeek');
+      const endOfWeek = moment().endOf('isoWeek');
+      filter.orderDate = { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() };
+    } else if (sort === 'month') {
+      const startOfMonth = moment().startOf('month');
+      const endOfMonth = moment().endOf('month');
+      filter.orderDate = { $gte: startOfMonth.toDate(), $lte: endOfMonth.toDate() };
+    }
+
+    
+
+    try {
 
 
+        const orders = await Order.find()
+        let sum,totalOffer,length
+      sum =0
+        totalOffer = 0
+     orders.forEach((x)=>{
+         sum += x.totalAmount;
+         totalOffer+=x.couponDiscount;
+     })
 
+     length=orders.length
 
+        
+        const salesData = await Order.find(filter).sort({ orderDate: -1 }).exec();
+        
+        res.render('salesReport', { salesData ,sum,totalOffer,length});
 
+    } catch (error) {
+        console.log(error.message);
+        res.redirect('/errorPage')
+        
+    }
+}
 
 
 
@@ -313,6 +392,8 @@ module.exports ={
     load_add_Coupen,
     load_edit_Coupen,
     edit_Coupen,
-    delete_Coupen
+    delete_Coupen,
+    salesReport,
+    sales_report
 
 }

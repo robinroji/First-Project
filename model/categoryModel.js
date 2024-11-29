@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema
 
 const categorySchema = new mongoose.Schema({
 
     name:{
         type:String,
         required:true
-    }
-    ,
-
+    },
     image:{
         type:String,
         required:false
@@ -20,7 +19,13 @@ const categorySchema = new mongoose.Schema({
     description:{
         type:String,
         required:true,
-    }
+    },
+    offerAmount:{
+        type:Number,
+        required:false
+    },
+   
+    
     
 
 },{timestamps:true})

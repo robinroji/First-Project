@@ -155,6 +155,7 @@
                     <input type="hidden" id="selectedPaymentMethods" name="paymentMethod" value="">
                     <input type="hidden" id="selectedAddressId" name="addressId" value="">
                     <input type="hidden" name="paymentId" id="razorpayId" value="">
+                    <input type="hidden" name="coupenOffer" value="" id="coupenOffer">
                 </form>
                 <% cart.items.forEach((item) => { %>
                     <div class="product-card">
@@ -223,6 +224,14 @@
 
 
 
+
+
+
+
+                
+
+
+
                 <p id="couponMessage"></p>
             </div>
 
@@ -271,7 +280,8 @@
 
 
                 <hr>
-                <p class="total-amount" id="totalOffer" >Total Amount: ₹<%= onlyItems.totalSalesPrice %>  </p>
+                <p class="total-amount">Total Amount: ₹<%= onlyItems.totalSalesPrice %>  </p>
+                <input  type="hidden" value="<%= onlyItems.totalSalesPrice %>" id="totalOffer" >
                 <button type="submit" onclick="checkInputs(event)" class="btn btn-primary btn-lg w-100" id="placeOrder" >Place Order</button>
            
             </div>
@@ -332,6 +342,7 @@ async function applyCoupen() {
             const finalPrice=data.finalPrice
             document.getElementById('totalOffer').innerText = `Total Amount: ₹${finalPrice}`;
             document.getElementById('couponMessage').innerText = `Coupon applied! You saved ${discountAmount}.`;
+            document.getElementById('coupenOffer').value = data.amount
             applyButton.innerText='remove'
             applyButton.onclick = () => removeCoupen(discountAmount);
         } else {
@@ -426,12 +437,14 @@ function payment(id){
 async function razor(form){
     try {
         
+        const amount = document.getElementById('totalOffer').value
+        console.log(amount)
         const response = await fetch('/razorPay', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ amount: 500, currency: 'INR' }),
+        body: JSON.stringify({ amount, currency: 'INR' }),
       });
 
       const data = await response.json();

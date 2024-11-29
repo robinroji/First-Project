@@ -49,6 +49,11 @@ router.get('/load_edit_Coupen/:id',adminController.load_edit_Coupen)
 router.post('/edit_Coupen/:id',adminController.edit_Coupen)
 router.post('/delete/:id',adminController.delete_Coupen)
 
+//******  Sales Report */
+
+router.get('/salesReport',adminController.salesReport)
+router.get('/sales-report',adminController.sales_report)
+
 
 
 

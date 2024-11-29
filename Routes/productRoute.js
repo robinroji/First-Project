@@ -59,9 +59,16 @@ route.delete('/img_delete',product_controller.img_delete)
 
 //****   Product Offer */
 route.get('/load_productOffer',admin_auth.isLogin,product_controller.load_productOffer)
-route.post('/productOffer',product_controller.productOffer)
-route.post('/applyProducOffer',product_controller.applyProducOffer)
-route.post('/removeOffer',product_controller.removeOffer)
+route.post('/productOffer',admin_auth.isLogin,product_controller.productOffer)
+
+route.post('/applyProducOffer',admin_auth.isLogin,product_controller.applyProducOffer)
+route.post('/removeOffer',admin_auth.isLogin,product_controller.removeOffer)
+
+//*** ************ RETURN PRODUCT PAGE ************/
+
+route.get('/returnProducts',admin_auth.isLogin,product_controller.returnProducts)
+route.post('/acceptReturn',admin_auth.isLogin,product_controller.acceptReturn)
+route.post('/rejectOrder',admin_auth.isLogin,product_controller.rejectOrder)
 
 
 
