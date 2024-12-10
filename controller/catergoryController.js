@@ -1,13 +1,14 @@
 const  Category = require('../model/categoryModel')
 const CategoryOffer = require('../model/categoryOfferModel')
 const Product = require('../model/productModel')
+const Cart = require('../model/cartModel')
 
 
 
 //** CAATEGORY PAGE **/
 const categoryPage = async(req,res)=>{
         try {
-            const categories = await Category.find()
+            const categories = await Category.find().sort({createdAt:-1})
             
             res.render('categories',{categories})
             
@@ -184,7 +185,11 @@ const createOffer = async (req, res) => {
         const categoryOffer = await CategoryOffer.findOne({_id:categoryOfferId})
          const product = await Product.find({product_category:categoryId})
         const category = await Category.findOne({_id:categoryId})
-
+        
+        if(category.offerAmount>0){
+            console.log('190')
+            return res.status(400).json({success:false,message:'offer already exists'})
+        }
         category.offerAmount=categoryOffer.discountPercentage;
         category.save()
         
@@ -260,25 +265,40 @@ const createOffer = async (req, res) => {
       try {
         const {category_id} = req.body
         console.log(category_id)
-
+        const categoryData  = await Category.findOne({_id:category_id})
+        if(!categoryData.offerAmount){
+            return res.status(400).json({success:false,message:'offer doesnt exists'})
+        }
         const product= await Product.find({product_category:category_id})
         console.log(product)
 
+        console.log('before product price',product.product_sale_price)
+        for (const item of product) {
+            try {
+                // console.log(`Updating product with category_id: ${category_id}, offerValue: ${item.offerValue}`);
+                
+                const productUpdate = await Product.findOneAndUpdate(
+                    { product_category: category_id,_id:item.id},
+                    {
+                        product_sale_price: item.product_sale_price + item.offerValue,
+                        offerValue: 0 // Ensure this matches the schema
+                    },
+                    { new: true } // Return the updated document
+                );
         
-        product.forEach(async function(item){
-             
- 
-             const productUpdate = await  Product.findOneAndUpdate(
-                 { product_category: category_id ,_id:item._id},
-                 { product_sale_price:item.product_sale_price+item.offerValue,offerValue:0},
-                 { new: true } 
-                )        
-                
-                
-                console.log('new price',item.product_sale_price)
-               
-         })
-
+                if (productUpdate) {
+                    console.log(`Updated product successfully:`, productUpdate);
+                } else {
+                    console.log(`No product found for category_id: ${category_id}`);
+                }
+            } catch (error) {
+                console.error(`Error updating product: ${error.message}`);
+            }
+        }
+        
+         categoryData.offerAmount = 0
+         await categoryData.save()
+           
          return res.status(200).json({ success: true, message: 'Coupon removed successfully.' });
 
 

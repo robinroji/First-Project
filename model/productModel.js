@@ -53,6 +53,10 @@ const productSchema = new mongoose.Schema({
     offerValue:{
         type:Number,
         required:false
+    },
+    sales_count:{
+        type:Number,
+        default:0
     }
     
     

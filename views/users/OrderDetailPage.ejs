@@ -32,8 +32,10 @@
 </style>
 </head>
 <body>
-    <div class="container my-4">
-        <h1>Order Details</h1>
+    <div class="main-div" style="background-color: lightgray;">
+
+    <div class="container my-4 pt-4">
+        <!-- <h1>Order Details</h1> -->
        
 
         <table class="table table-dark table-bordered">
@@ -45,12 +47,13 @@
                     <th>Total Price</th>
                     <th>Address</th>
                     <th>Update</th>
+                    <th>Download</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><%= order.user.firstname %></td>
-                    
+        
                     <!-- Display multiple products in a single cell -->
                     <td>
                         <% order.items.forEach(item => { %>
@@ -60,13 +63,15 @@
                             </div>
                         <% }) %>
                     </td>
-                    
+        
                     <td>
                         <span class="status-active"><%= order.orderStatus %></span>
                     </td>
+        
                     <td>
-                        ₹<%= order.totalAmount %> <!-- Calculate total price -->
+                        ₹<%= order.totalAmount %> <!-- Display total price -->
                     </td>
+        
                     <td>
                         <%= orderAddress.shippingAddress.houseName %><br>
                         <%= orderAddress.shippingAddress.pinCode %><br>
@@ -74,73 +79,51 @@
                         <%= orderAddress.shippingAddress.location %><br>
                         <%= orderAddress.shippingAddress.state %>
                     </td>
+        
                     <td>
-                        <form action=" /deleteOrder/<%= order._id %>" method="POST" style="display: inline;">
-                                <% if (order.orderStatus === 'Delivered' || order.orderStatus == 'Return Initiated'|| order.orderStatus =='Return Approved') { %>
-                                    <button
-                                    <% if (order.orderStatus === 'Return Initiated') { %> 
-                                        disabled 
-                                    <% } %>  
-
-                                    <% if (order.orderStatus === 'Return Approved') { %> 
-                                        disabled 
-                                    <% } %>
-
-                                    <% if (order.orderStatus === 'Return Rejected') { %> 
+                        <% if (['Delivered', 'Return Initiated', 'Return Approved'].includes(order.orderStatus)) { %>
+                            <form action="/deleteOrder/<%= order._id %>" method="POST" style="display: inline;">
+                                <button 
+                                    class="btn btn-danger" 
+                                    id="return-btn" 
+                                    onclick="return returnproduct(event, '<%= order._id %>') && confirm('Are you sure you want to return this order?')"
+                                    <% if (['Return Initiated', 'Return Approved', 'Return Rejected'].includes(order.orderStatus)) { %> 
                                         disabled 
                                     <% } %>
-
-                                    class="btn btn-danger" onclick="return  returnproduct(event,'<%= order._id %>'), confirm('Are you sure you want to return this order?')" id="return-btn" >
-                                        <i class="fas fa-trash"></i> Return
-                                    </button>
-                                <% } else { %>
-                                    <button class="btn btn-danger" 
-                                        <% if (order.orderStatus === 'cancelled') { %> 
-                                            disabled 
-                                        <% } %> 
-
-                                        <% if (order.orderStatus === 'Return Initiated') { %> 
-                                            
-                                            disabled
-                                        <% } %> 
-
-                                        <% if (order.orderStatus === 'Return Rejected') { %> 
-                                            disabled 
-                                        <% } %>
-
-                                        onclick="return confirm('Are you sure you want to cancel this order?')">
-                                        <i class="fas fa-trash"></i> Cancel
-                                    </button>
-                                <% } %>
-                                
+                                >
+                                    <i class="fas fa-trash"></i> Return
+                                </button>
                             </form>
-                            
-                           
-                           
+                        <% } else if (order.orderStatus === 'pending') { %>
+                            <form action="/checkout2/<%= order._id %>" method="get" style="display: inline;">
+                                <button class="btn btn-warning">
+                                    <i class="fas fa-redo"></i> Retry
+                                </button>
+                            </form>
+                        <% } else { %>
+                            <form action="/deleteOrder/<%= order._id %>" method="POST" style="display: inline;">
+                                <button 
+                                    class="btn btn-danger" 
+                                    onclick="return confirm('Are you sure you want to cancel this order?')"
+                                    <% if (['cancelled', 'Return Initiated', 'Return Rejected'].includes(order.orderStatus)) { %> 
+                                        disabled 
+                                    <% } %>
+                                >
+                                    <i class="fas fa-trash"></i> Cancel
+                                </button>
+                            </form>
+                        <% } %>
+                    </td>
+        
+                    <td>
+                        <a href="/downloadInvoice/<%= order._id %>" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download Invoice
+                        </a>
                     </td>
                 </tr>
-        
-                <!-- Order Details Row -->
-                <!-- <tr>
-                    <td colspan="7">
-                        <div class="order-details-container">
-                            <p><strong>Status:</strong> <%= order.status %></p>
-                            <form action="/updateOrder/<%= order._id %>" method="POST">
-                                <div class="mb-2">
-                                    <label for="status-<%= order._id %>">Update Status:</label>
-                                    <select id="status-<%= order._id %>" name="status" class="form-select w-auto">
-                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Update</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr> -->
             </tbody>
         </table>
+        
     </div>
 
     <!-- Modal for Return Reasons -->
@@ -173,6 +156,8 @@
         </div>
     </div>
 </div>
+</div>
+
 
 
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
@@ -180,6 +165,31 @@
 </html>
 
 <script>
+
+async function retryPayment(event,orderId) {
+    event.preventDefault()
+    console.log(orderId)
+    try {
+        const response = await fetch('/retryCheckout',{
+            method:'post',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({orderId})
+
+        })
+
+        const data = response.json()
+        window.location.href='/'
+        
+    } catch (error) {
+        console.log(error.message)
+        
+    }
+    
+}
+
+
     async function returnproduct(event, OrderId) {
         event.preventDefault();
         console.log(OrderId);

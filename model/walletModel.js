@@ -24,6 +24,11 @@ const walletTransactions = new Schema({
     razorpaymentId:{
         type:String,
     },
+    walletFrom:{
+        type:String,
+        required:false
+    }
+   
 }, { timestamps: true });
 
 const walletSchema = new mongoose.Schema({
@@ -38,7 +43,8 @@ const walletSchema = new mongoose.Schema({
         required:true,
         default:0
     },
-    transactions:[walletTransactions]
+    transactions:[walletTransactions],
+    
 },{timestamps:true
 
 

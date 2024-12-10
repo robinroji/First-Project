@@ -3,6 +3,8 @@
 <head>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <style>
         /* General Styles */
@@ -151,7 +153,7 @@
                 <h3 class="order-items-header">Order Items</h3>
                 <form action="/placeOrder" id="orderForm" method="post">
 
-                    <input type="hidden" name="cartId" value="<%= cart._id %>">
+                    <input type="hidden" name="cartId" value="<%= cart._id %>" id="thecart" >
                     <input type="hidden" id="selectedPaymentMethods" name="paymentMethod" value="">
                     <input type="hidden" id="selectedAddressId" name="addressId" value="">
                     <input type="hidden" name="paymentId" id="razorpayId" value="">
@@ -194,7 +196,7 @@
                            <button type="button" onclick="window.location.href='/edit_editAddress/<%=item._id%>' "> Edit Address</button>
                         </div>
                         
-                        <input class="radio-btn" type="radio" name="addressId" onclick="addressSelect('<%= item.id %>')" value="<%= item._id %>">
+                        <input class="radio-btn" type="radio" name="addressId" onclick="addressSelect('<%= item.id %>')" value="<%= item._id %>"  id="addressId">
                     </li>
                 <% }); %>
                 </ul>
@@ -209,7 +211,7 @@
                 <ul>
                     <li>
                         <span>Cash On Delivery</span>
-                        <input type="radio" class="radio-btn" name="payment" value="COD" id="cod" onclick="payment(value)" >
+                        <input <% if(onlyItems.totalSalesPrice>1000) {%>disabled<%}%>  type="radio" class="radio-btn" name="payment" value="COD" id="cod" onclick="payment(value)" >
                     
                         <span>RazorPay</span>
                         <input type="radio" class="radio-btn" name="payment" value="RazorPay" id="razorpay" onclick="payment(value)" >
@@ -221,15 +223,6 @@
                 <input type="text" id="coupen" placeholder="Enter the coupen">
                 <button type="button" onclick="applyCoupen()">Apply Coupen </button>
                 <button type="button" id="viewCouponsButton" data-bs-toggle="modal" data-bs-target="#couponModal">View Coupons</button>
-
-
-
-
-
-
-
-                
-
 
 
                 <p id="couponMessage"></p>
@@ -274,14 +267,27 @@
             <!-- Order Summary -->
             <div class="order-summary">
                 <h4>Order Summary</h4>
-                <% cart.items.forEach((item) => { %> 
-                    <p><%= item.product.product_name %> - ₹<%= item.product.product_sale_price * item.quantity %></p>
-                    <% }); %>
+                <% if (cart && cart.totalRegularPrice > 0) { %>
+                    <p>Total Price: ₹<%= cart.totalRegularPrice %></p>
+                <% } else { %>
+                    <p>No items in the cart.</p>
+                <% } %>
+            </div>
+            
 
 
                 <hr>
-                <p class="total-amount">Total Amount: ₹<%= onlyItems.totalSalesPrice %>  </p>
-                <input  type="hidden" value="<%= onlyItems.totalSalesPrice %>" id="totalOffer" >
+                <h4>Order Summary</h4>
+                <% if (cart && cart.totalSalesPrice > 0) { %>
+                    <p>Total Price: ₹<%= cart.totalSalesPrice %></p>
+                <% } else if (cart && cart.items.length > 0) { %>
+                    <% cart.items.forEach((item) => { %>
+                        <p><%= item.product.product_name %> - ₹<%= item.product.product_sale_price * item.quantity %></p>
+                    <% }); %>
+                <% } else { %>
+                    <p>No items in the cart.</p>
+                <% } %>
+                                <input  type="hidden" value="<%= onlyItems.totalSalesPrice %>" id="totalOffer" >
                 <button type="submit" onclick="checkInputs(event)" class="btn btn-primary btn-lg w-100" id="placeOrder" >Place Order</button>
            
             </div>
@@ -316,11 +322,11 @@
 
 <script>
 
-    
-//coupen//
+
+/////  ADD COUPEN ////
+
 async function applyCoupen() {
     const applyButton = document.querySelector('.coupen_session button');
-
     const coupon = document.getElementById('coupen').value;
     const couponField = document.getElementById('coupen')
     console.log('cc',couponField)
@@ -340,10 +346,11 @@ async function applyCoupen() {
         if (response.ok) {
             const discountAmount = data.amount
             const finalPrice=data.finalPrice
-            document.getElementById('totalOffer').innerText = `Total Amount: ₹${finalPrice}`;
+            document.getElementById('total-amount').innerText = `Total Amount: ₹${finalPrice}`;
             document.getElementById('couponMessage').innerText = `Coupon applied! You saved ${discountAmount}.`;
             document.getElementById('coupenOffer').value = data.amount
             applyButton.innerText='remove'
+            document.getElementById('coupen').value = discountAmount
             applyButton.onclick = () => removeCoupen(discountAmount);
         } else {
             document.getElementById('couponMessage').innerText = data.message;
@@ -353,14 +360,13 @@ async function applyCoupen() {
         window.location.href = '/errorPage';
     }
 }
+///   REMOVE COUPEN ///
 
 async function removeCoupen(price){
 
     console.log('function is going on',price)
     const applyButton = document.querySelector('.coupen_session button');
     const couponField = document.getElementById('coupen');
-    const coupon = document.getElementById('coupen').value;
-
 
     couponField.value = '';
     applyButton.innerText = 'Apply Coupon';
@@ -386,23 +392,14 @@ async function removeCoupen(price){
         document.getElementById('couponMessage').innerText = '';
 
     }
-   
-
-
 }
 
+///   RAZORPAY ///
 
-
-
-
-//razorpay//////
 function checkInputs(event) {
-
-
 event.preventDefault();
 event.stopPropagation();
 addressId = document.getElementById('selectedAddressId').value;
-console.log(addressId)
 paymentMethod = document.getElementById('selectedPaymentMethods').value;
 let form = document.getElementById('orderForm')
 if(!addressId){
@@ -436,9 +433,9 @@ function payment(id){
 
 async function razor(form){
     try {
-        
+         console.log('check 1')
         const amount = document.getElementById('totalOffer').value
-        console.log(amount)
+        console.log('check 2',amount)
         const response = await fetch('/razorPay', {
         method: 'POST',
         headers: {
@@ -471,6 +468,7 @@ async function razor(form){
           const verificationData = await verificationResponse.json();
 
           if (verificationData.success) {
+            console.log('razorpay finally success')
             
             form.submit()
           } else {
@@ -480,8 +478,34 @@ async function razor(form){
       };
 
       const rzp = new Razorpay(options);
+      rzp.on('payment.failed', async function (paymentDetails) {
+
+        let selectAddressId= document.getElementById('addressId').value
+                try {
+                    const paymentId = paymentDetails.error.metadata.payment_id;
+                    const orderId = '<%= cart._id %>'
+                    console.log('Payment ID:', paymentId);
+                    console.log('selected address:',selectAddressId);
+                    const response = await fetch('/failedPayment/<%= cart.user %>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId, selectAddressId, orderId})
+                    });
+            
+                    if (response.ok) {
+                        const responseData = await response.json();
+                        console.log('Payment failed response:', responseData);
+                        window.location.href =`/retryPage/${responseData.paymentId?._id}`
+                        
+                    } else {
+                        console.error('Server error during payment failure handling.');
+                    }
+                } catch (error) {
+                    console.error('Error in payment.failed handler:', error);
+                    alert('Something went wrong. Please try again.');
+                }
+            });
       rzp.open();
-   
 
     } catch (error) {
         console.log(error.message)
@@ -491,16 +515,6 @@ async function razor(form){
 }
 
 
-
-
-</script>
-
-
-
-
-
-
-<script>
     const placeOrderBtn = document.getElementById('placeOrderBtn');
     const codRadio = document.getElementById('cod');
     const razorpayRadio = document.getElementById('razorpa');

@@ -7,8 +7,8 @@
     }
     .profile-container {
         max-width: 1200px;
-        margin: 50px auto;
         padding: 20px;
+        margin-top: 30px;
         background-color: #ffffff;
         border-radius: 10px;
         box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
@@ -82,7 +82,7 @@
 </style>
 </head>
 <body>
-<div class="container profile-container">
+<div class="container profile-container " style="background-color:lightgrey;">
 
     <script> 
         <% if (typeof message !== 'undefined' && message) { %>
@@ -116,33 +116,34 @@
 
             </div>
         </div>
-
-        <form action='/personal_edit/' method="post">
+        <form action='/personal_edit/' method="post" onsubmit="return validateForm()">
             <div class="section-title">Personal Information</div>
-            
-
+        
             <div class="row">
                 <div class="col-md-6 form-group">
                     <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" name="firstName" class="form-control"  value="<%= user.firstname%>">
+                    <input type="text" id="firstName" name="firstName" class="form-control" value="<%= user.firstname %>">
+                    <small id="firstNameError" class="text-danger"></small>
                 </div>
                 <div class="col-md-6 form-group">
                     <label for="lastName">Last Name</label>
                     <input type="text" id="lastName" name="lastName" class="form-control" placeholder="User last name" value="<%= user.lastname %>">
+                    <small id="lastNameError" class="text-danger"></small>
                 </div>
             </div>
-
+        
             <div class="row">
                 <div class="col-md-6 form-group">
                     <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" name="dob" class="form-control" value="<%= user.DOB %>">
+                    <input type="date" id="dob" name="dob" class="form-control" value="<%= user.DOB %>" required>
+                    <small id="dobError" class="text-danger"></small>
                 </div>
-               
             </div>
-            
+        
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
-        <br>
+        
+        
 
 
         <form action='/contact_edit' method="post">
@@ -225,5 +226,52 @@
         alert('password changed')
     });
 </script> -->
+
+<script>
+    function validateForm() {
+        let isValid = true;
+
+        // Validate First Name
+        const firstName = document.getElementById('firstName');
+        const firstNameError = document.getElementById('firstNameError');
+        if (!firstName.value || firstName.value.length < 2 || firstName.value.length > 50) {
+            firstNameError.textContent = "First Name must be between 2 and 50 characters.";
+            isValid = false;
+        } else {
+            firstNameError.textContent = "";
+        }
+
+        // Validate Last Name
+        const lastName = document.getElementById('lastName');
+        const lastNameError = document.getElementById('lastNameError');
+        if (!lastName.value || lastName.value.length < 2 || lastName.value.length > 50) {
+            lastNameError.textContent = "Last Name must be between 2 and 50 characters.";
+            isValid = false;
+        } else {
+            lastNameError.textContent = "";
+        }
+
+        // Validate Date of Birth
+        const dob = document.getElementById('dob');
+        const dobError = document.getElementById('dobError');
+        const selectedDate = new Date(dob.value);
+        const today = new Date();
+
+        if (!dob.value) {
+            dobError.textContent = "Date of Birth is required.";
+            isValid = false;
+        } else if (selectedDate >= today) {
+            dobError.textContent = "Date of Birth must be before today.";
+            isValid = false;
+        } else {
+            dobError.textContent = "";
+        }
+
+        return isValid;
+    }
+</script>
+
+
+
 
 <%-include ('../layouts/user_footer') %>

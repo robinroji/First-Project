@@ -21,9 +21,10 @@ router.set('views','./views/admin');
 router.get('/login',admin_auth.isLogout,adminController.loadLogin)
 router.get('/',admin_auth.isLogout, adminController.loadLogin)
 router.get('/dashboard',admin_auth.isLogin,adminController.loadDashbord)
+// router.get('/dashboardFilter',admin_auth.isLogin,adminController.dashboardFilter)
 router.get('/logout',adminController.logout)
 
-router.post('/login',adminController.login)
+router.post('/login',admin_auth.isLogout,adminController.login)
 
 //**ADMIN CUSTOMER CONTROLLER **/
 router.get('/customer',admin_auth.isLogin,admin_customerController.loadCustomer)
@@ -33,31 +34,31 @@ router.post('/customer/Unblock/:id',admin_auth.isLogin,admin_customerController.
 
 //**** Order List *****/
 
-router.get('/orderList',adminController.loadOrderList)
-router.get('/edit_order/:id', adminController.editOrder);
+router.get('/orderList',admin_auth.isLogin,adminController.loadOrderList)
+router.get('/edit_order/:id',admin_auth.isLogin, adminController.editOrder);
 
 //**** Order Detail List  */
 
-router.post('/delete_order/:id',adminController.deleteOrder)
-router.post('/updateStatus/:id',adminController.updateStatus)
+router.post('/delete_order/:id,admin_auth.isLogin',adminController.deleteOrder)
+router.post('/updateStatus/:id',admin_auth.isLogin,adminController.updateStatus)
 
 //****** Coupen ****************/
-router.get('/coupen',adminController.getCoupen)
-router.get('/load_add_Coupen',adminController.load_add_Coupen)
-router.post('/add_Coupen',adminController.add_Coupen)
-router.get('/load_edit_Coupen/:id',adminController.load_edit_Coupen)
-router.post('/edit_Coupen/:id',adminController.edit_Coupen)
-router.post('/delete/:id',adminController.delete_Coupen)
+router.get('/coupen',admin_auth.isLogin,adminController.getCoupen)
+router.get('/load_add_Coupen',admin_auth.isLogin,adminController.load_add_Coupen)
+router.post('/add_Coupen',admin_auth.isLogin,adminController.add_Coupen)
+router.get('/load_edit_Coupen/:id',admin_auth.isLogin,adminController.load_edit_Coupen)
+router.post('/edit_Coupen/:id',admin_auth.isLogin,adminController.edit_Coupen)
+router.post('/delete/:id',admin_auth.isLogin,adminController.delete_Coupen)
 
 //******  Sales Report */
 
-router.get('/salesReport',adminController.salesReport)
-router.get('/sales-report',adminController.sales_report)
+router.get('/salesReport',admin_auth.isLogin,adminController.salesReport)
+router.get('/sales-report',admin_auth.isLogin,adminController.sales_report)
 
 //**** download sales Report */
 
-router.get('/sales-report/download/pdf',adminController.pdf)
-router.get('/sales-report/download/excel',adminController.excel)
+router.get('/sales-report/download/pdf',admin_auth.isLogin,adminController.pdf)
+router.get('/sales-report/download/excel',admin_auth.isLogin,adminController.excel)
 
 
 

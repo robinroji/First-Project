@@ -6,6 +6,14 @@ const ProductOffer = require('../model/productOfferModel')
 const ReturnProducts = require('../model/returnOrderModel')
 const Order = require('../model/orderModel')
 const Wallet = require('../model/walletModel')
+const multer = require('multer');
+const { findByIdAndDelete } = require('../model/userModel');
+// const upload = multer().fields([
+//     { name: 'productImages', maxCount: 3 },
+//     { name: 'croppedImages[]', maxCount: 3 }, // Match frontend naming
+// ]);
+
+
 
 
 const addProduct = async (req, res) => {
@@ -14,7 +22,7 @@ const addProduct = async (req, res) => {
         req.files.forEach((image) => {
             img.push(image.filename);
         });
-
+console.log(img)
         const lastproduct = await Product.findOne().sort({ sl_number: -1 });
         const sl_number = lastproduct ? lastproduct.sl_number + 1 : 1;
 
@@ -34,11 +42,13 @@ const addProduct = async (req, res) => {
         if (catName) {
             const offer = (product.product_sale_price * catName.offerAmount) / 100;
             product.product_sale_price -= offer;
+            console.log('catname is working')
         }
 
         await product.save();
 
-        return res.status(200).json({ success: true, message: 'Product added successfully.' });
+        return res.redirect('/product/add_product')
+
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ success: false, message: 'An error occurred while adding the product.' });
@@ -130,30 +140,43 @@ const load_edit_page = async (req, res) => {
 
 //********** UPDATE THE PRODUCT */
 
+
 const update_product = async (req, res) => {
+    console.log('ggghh')
     try {
         let img = [];
-        
-        // Check if cropped image data is sent
-        if (req.body.croppedImage) {
-            // Decode the base64 image data
-            const base64Data = req.body.croppedImage.replace(/^data:image\/\w+;base64,/, '');
-            const buffer = Buffer.from(base64Data, 'base64');
+        req.files.forEach((image) => {
+            img.push(image.filename);
+        });
+        // Handle cropped images sent as base64
+        const croppedImages = req.body.croppedImages; // Assuming `croppedImages` is an array of base64 strings
+        console.log('cropped image ',img)
+        console.log('c',req.body.croppedImages)
+        if (croppedImages && Array.isArray(croppedImages)) {
+            croppedImages.forEach((base64Image, index) => {
+                if (base64Image) {
+                    // Decode base64 and create a buffer
+                    const buffer = Buffer.from(base64Image.split(',')[1], 'base64');
 
-            // Define a unique filename for the cropped image
-            const filename = `cropped_${Date.now()}.jpg`;
+                    // Define a unique filename for the cropped image
+                    const filename = `cropped_${Date.now()}_${index}.jpg`;
 
-            // Save the cropped image to the public/uploads folder
-            const filePath = path.join(__dirname, '../public/uploads', filename);
-            fs.writeFileSync(filePath, buffer);
+                    // Save the cropped image to the public/uploads folder
+                    const filePath = path.join(__dirname, '../public/', filename);
+                    fs.writeFileSync(filePath, buffer);
 
-            img.push(filename);
+                    // Push the filename to the image array
+                    img.push(filename);
+                }
+            });
         }
 
-        // Handle new image uploads via req.files
-        req.files.forEach((file) => {
-            img.push(file.filename);
-        });
+        // Handle new image uploads via `req.files`
+        if (req.files && req.files.length > 0) {
+            req.files.forEach((file) => {
+                img.push(file.filename);
+            });
+        }
 
         // Find the product by ID
         const updateProduct = await Product.findById(req.params.id);
@@ -170,7 +193,7 @@ const update_product = async (req, res) => {
                 product_category: req.body.pro_category,
                 product_description: req.body.pro_description,
                 product_quantity: req.body.pro_quantity,
-                product_image: img.length > 0 ? img : updateProduct.product_image,
+                product_image: img.length > 0 ? img : updateProduct.product_image, // Keep existing images if no new ones are added
                 product_sale_price: req.body.pro_sale_price,
                 product_brand: req.body.pro_brand
             },
@@ -188,6 +211,8 @@ const update_product = async (req, res) => {
         return res.redirect('/errorpage');
     }
 };
+
+module.exports = { update_product };
 
 
 
@@ -349,8 +374,8 @@ const applyProducOffer = async(req,res)=>{
 
        const offerAmount = product.product_sale_price * productOffer.discountPercentage /100
        console.log('offer is ',offerAmount)
-       product.product_sale_price = product.product_sale_price-offerAmount
-
+       product.product_sale_price = Math.ceil(product.product_sale_price-offerAmount)
+       product.offerValue = offerAmount
        productOffer.usedBy.push(product)
 
        product.save()
@@ -373,16 +398,19 @@ const applyProducOffer = async(req,res)=>{
 const removeOffer = async(req,res)=>{
     try {        
         const productId = req.body.productId
-        const offerAmount = req.body.offerAmount
-        console.log('offeramount is ',req.body.offerAmount)
         const product = await Product.findById(productId)
+        if(product.offerValue<=0){
+            return res.status(400).json({success:false,message:'offer doesnot exist'})
+        }
         console.log('productId',product)
-        const updatedProduct = await Product.findByIdAndUpdate( product, { $inc: { product_sale_price: offerAmount } }, { new: true });
+        const updatedProduct = await Product.findByIdAndUpdate( product, { $inc: { product_sale_price: Math.ceil(product.offerValue) } }, { new: true });
         console.log('newprice', updatedProduct.product_sale_price)
         const productOffer = await ProductOffer.findOneAndUpdate({usedBy:productId},{$pull:{usedBy:productId}},{new:true})
         const actualPrice = updatedProduct.product_sale_price
+        product.offerValue = 0
+        await product.save()
         // console.log('productOffer is',productOffer)
-        res.json({offer:productOffer,actualPrice:actualPrice})
+        return res.status(200).json({success:true,offer:productOffer,actualPrice:actualPrice})
 
 
     } catch (error) {
@@ -396,7 +424,7 @@ const removeOffer = async(req,res)=>{
 
 const returnProducts = async(req,res)=>{
     try {
-        const order = await ReturnProducts.find()
+        const order = await ReturnProducts.find().sort({createdAt:-1})
 
         res.render('returnProductPage',{order})
         
@@ -425,16 +453,31 @@ const acceptReturn = async(req,res)=>{
          const amount = orderAmount?.totalAmount
          const order = await Order.findOneAndUpdate({_id:orderId}, { orderStatus: 'Return Approved'}, { new: true });
          console.log('The order iss',order)
+         order.items.forEach(async function (item){
+            await Product.findOneAndUpdate({_id:item.product},{$inc:{product_quantity:item.quantity}})
+         })
          const wallet = await Wallet.findOneAndUpdate(
             { user: order.user },
             { $inc: { balance: amount }, },
             { new: true }
         );
+        const existingUser = await Wallet.findOne({ user:order.user});
 
-        wallet.transactions.forEach((item)=>{
-            item.orderId=order._id
 
-    })
+         // Push transaction details
+         existingUser.transactions.push({
+            orderId: order._id,
+            amount: order.totalAmount,
+            type: 'credit', // Refund is a credit transaction
+            status: 'success',
+            walletFrom:'Returned Product'
+
+        });
+
+        // Save the updated wallet
+        await existingUser.save();
+
+    
         await wallet.save()
         res.json({success:true})
 
@@ -468,14 +511,84 @@ const rejectOrder =async(req,res)=>{
     }
 }
 
+const upload_cropped_image = async(req,res)=>{
+    try {
+        
+        console.log('getting in the upload route')
+    } catch (error) {
+        console.log(error.message)
+        res.return('/errorPage')        
+    }
+}
 
+//***********    List offer ******/
 
+const listOffer = async(req,res)=>{
+    try {
 
+        const productOffer = await ProductOffer.find()
+        console.log(productOffer)
 
+        res.render('productOfferList',{productOffer})
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
 
+///*************************** load_editProductOffer  */
 
+const load_editProductOffer =  async(req,res)=>{
+    try {
+       const offer =  await ProductOffer.findById(req.params.id)
+        res.render('edit_ProductofferPage',{offer})
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
 
+//*************  edit_productOffer    */
+const edit_productOffer = async (req, res) => {
+    try {
+        console.log('edit page entered ');
+        const update = await ProductOffer.findByIdAndUpdate(
+            req.params.id,
+            {
+                name: req.body.name,
+                discountPercentage: req.body.discountPercentage,
+                expiryData: req.body.expiryDate,
+                startDate: req.body.startDate,
+                description: req.body.description,
+            },
+            { new: true }
+        );
 
+         res.redirect('/product/list_ProductOffer'); 
+    } catch (error) {
+        console.log(error.message);
+        res.redirect('/errorPage');
+    }
+};
+
+//*************   deleteOffer   *********/
+
+const deleteOffer = async(req,res)=>{
+    try {
+    
+        const offer = await ProductOffer.findByIdAndDelete(req.params.id)
+        res.redirect('/product/list_ProductOffer')
+        
+    } catch (error) {
+        console.log(error.message)
+        res.redirect('/errorPage')
+        
+    }
+}
 
 
 
@@ -506,6 +619,11 @@ module.exports ={
     removeOffer,
     returnProducts,
     acceptReturn,
-    rejectOrder
+    rejectOrder,
+    upload_cropped_image,
+    listOffer,
+    load_editProductOffer,
+    edit_productOffer,
+    deleteOffer
     
 }

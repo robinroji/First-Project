@@ -1,0 +1,32 @@
+<%- include("../layouts/user_header.ejs") %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Payment Failed!</h4>
+                    <p>Unfortunately, your payment could not be processed. Please try again.</p>
+                    <hr>
+                </div>
+                <form action="/retry-payment" method="POST">
+                    <input type="hidden" name="paymentId" value="<%= paymentId %>">
+                    <button type="submit" class="btn btn-primary">Retry Payment</button>
+                </form>
+                <a href="/" class="btn btn-secondary mt-3">Go to Homepage</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<%- include("../layouts/user_footer.ejs") %>

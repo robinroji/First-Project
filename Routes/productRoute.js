@@ -49,6 +49,7 @@ route.post('/add_product',admin_auth.isLogin,upload.array('pro_images'),product_
 //**  EDIT PRODUCT  **//
 route.get('/edit_product/:id',admin_auth.isLogin,product_controller. load_edit_page)
 route.post('/edit_product/:id',admin_auth.isLogin,upload.array('pro_images'),product_controller.update_product)
+route.post('/upload-cropped-image',admin_auth.isLogin,product_controller.upload_cropped_image)  //thi
 
 //**  DELETE PRODUCT **//
 route.post('/activate/:id',admin_auth.isLogin,product_controller.active_product)
@@ -58,8 +59,12 @@ route.post('/deactivate/:id',admin_auth.isLogin,product_controller.deactive_prod
 route.delete('/img_delete',product_controller.img_delete)
 
 //****   Product Offer */
+route.get('/list_ProductOffer',admin_auth.isLogin,product_controller.listOffer)
 route.get('/load_productOffer',admin_auth.isLogin,product_controller.load_productOffer)
 route.post('/productOffer',admin_auth.isLogin,product_controller.productOffer)
+route.get('/load_editProductOffer/:id',admin_auth.isLogin,product_controller.load_editProductOffer)
+route.post('/edit_productOffer/:id',admin_auth.isLogin,product_controller.edit_productOffer)
+route.post('/delete_productOffer/:id',admin_auth.isLogin,product_controller.deleteOffer)
 
 route.post('/applyProducOffer',admin_auth.isLogin,product_controller.applyProducOffer)
 route.post('/removeOffer',admin_auth.isLogin,product_controller.removeOffer)

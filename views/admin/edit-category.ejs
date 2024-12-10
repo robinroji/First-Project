@@ -24,7 +24,7 @@
                 </div>
 
                 <div>
-                    <button id="remove-btn" onclick="removeOffer(event,'<%=category._id%>')">Remove Offer</button>
+                    <button <% if(category.offerAmount<=0) {%>disabled<% } %> id="remove-btn" onclick="removeOffer(event,'<%=category._id%>')">Remove Offer</button>
                 </div>
                 <br>
 
@@ -43,7 +43,7 @@
                                     <p class="card-text"><strong>Offer Expires :<%= item.expiryData %></strong></p>
                                     <p class="card-text"><strong>Description:<%= item.description %></strong></p>
 
-                                    <button  id="apply-offer" class="offer-btn" type="button" onclick="applycoupen(event, '<%= item._id %>','<%= category._id %>')">Apply Offer</button>
+                                    <button <% if(category.offerAmount>0) {%>disabled<% } %> id="apply-offer" class="offer-btn" type="button" onclick="applycoupen(event, '<%= item._id %>','<%= category._id %>')">Apply Offer</button>
                                 </div>
                             </div>
                         </div>
@@ -90,30 +90,44 @@ async function removeOffer(event, category_id) {
                 body: JSON.stringify({ category_id})
             });
     
-            if (!response.ok) throw new Error('Response error');
     
             const data = await response.json();
+           if(data.success){
             Swal.fire({
                 title: 'Success',
                 text: 'Offer removed successfully!',
                 icon: 'success',
                 allowOutsideClick: false,
             });
+           
 
-            const buttons = document.querySelectorAll('.offer-btn');
+            document.getElementById('apply-offer').disabled = false
+            document.getElementById('remove-btn').disabled = true
+    //     const buttons = document.querySelectorAll('.offer-btn');
     
-    // Disable all buttons
-    buttons.forEach(button => {
-        button.disabled= false;
-    });
-
+    // // Disable all buttons
+    // buttons.forEach(button => {
+    //     button.disabled=true ;
+    // });
+           }  else{
+            Swal.fire({
+                title: 'Error',
+                text: data.message||'Offer removed successfully!',
+                icon: 'error',
+                allowOutsideClick: false,
+            });
+           }
     
-            if (!data.success) throw new Error(data.message || 'Image deletion error');
+           
             
            
         } catch (error) {
-            Swal.close();
-            console.log(error);
+            Swal.fire({
+                title: 'Error',
+                text: error||'Offer removed successfully!',
+                icon: 'error',
+                allowOutsideClick: false,
+            });
         }
     }
 
@@ -135,22 +149,32 @@ async function applycoupen(event, categoryOfferId,categoryId) {
     const data = await response.json()
     console.log(data)
     // const offerAmount = data.offerDiscount
-
+    if(data.success){
     console.log('offer iss',data.success)
 
-    const buttons = document.querySelectorAll('.offer-btn');
-    
-    // Disable all buttons
-    buttons.forEach(button => {
-        button.disabled= true;
-    });
+    document.getElementById('apply-offer').disabled = false
+    document.getElementById('remove-btn').disabled = false
 
-    if(data){
+    // const buttons = document.querySelectorAll('.offer-btn');
+    
+    // // Disable all buttons
+    // buttons.forEach(button => {
+    //     button.disabled= true;
+    // });
+
+    
         console.log('applied')
         Swal.fire({
                 title: 'Success',
                 text: 'Offer applied successfully!',
                 icon: 'success',
+                allowOutsideClick: false,
+            });
+    }else{
+        Swal.fire({
+                title: 'Error',
+                text: data.message||'Offer Failed!',
+                icon: 'error',
                 allowOutsideClick: false,
             });
     }

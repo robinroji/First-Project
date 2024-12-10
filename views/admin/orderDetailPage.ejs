@@ -31,11 +31,7 @@
 <body>
     <div class="container my-4">
         <h1>Order Details</h1>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <input type="text" class="form-control w-25" placeholder="Search Orders...">
-            <button class="btn btn-success">+ Add Order</button>
-        </div>
-
+       <br>
         <table class="table table-dark table-bordered">
             <thead>
                 <tr>
@@ -99,7 +95,7 @@
                                     <select id="status-<%= order._id %>" name="status" class="form-select w-auto">
                                         <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                                         <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                        <!-- <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option> -->
                                     </select>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Update</button>

@@ -6,6 +6,7 @@ const Order = require('../model/orderModel')
 const Coupen = require('../model/coupenModel');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
+const Product = require('../model/productModel')
 
 //************** ADMIN  GET LOGIN  *************/
 
@@ -54,7 +55,7 @@ const login = async (req,res)=>{
                     {
 
                     req.session.admin = admin._id;
-                    return res.render('admin_Dashboard')
+                    return res.redirect('/admin/dashboard')
                 }else{
                     console.log('admin password is not matching ');
                     return res.render('login',{message:'password is incorrect'})
@@ -77,11 +78,47 @@ const login = async (req,res)=>{
 
 const loadDashbord= async(req,res)=>{
    try {
-    res.render('admin_Dashboard')
+     const order = await Order.aggregate([{$group:{_id:null,total:{$sum:1}}},{$project:{_id:0,total:1}}])
+     const totalOrder = order[0].total
+   
+     const income = await Order.aggregate([{$group:{_id:null,income:{$sum:'$totalAmount'} }}])
+     const totalIncome = income[0].income
+     
+     const products = await Product.aggregate([{$group:{_id:null,products:{$sum:'$product_quantity'}}}])
+     const totalProducts = products[0].products
+
+     const bestProducts = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+          $group: {
+              _id: "$items.product",
+              bestProducts: { $sum: "$items.quantity" }
+          }
+      },
+      { $sort: { bestProducts: -1 } },
+      {
+          $lookup: {
+              from: "products", // Use the correct collection name
+              localField: "_id",
+              foreignField: "_id",
+              as: "productDetails"
+          }
+      },
+      { $unwind: "$productDetails" } // Unwind the joined product details
+  ]);
+  
+
+    const bestCategory = await Order.aggregate([{$unwind:'$items'},{$group:{_id:'$items.category',bestProducts:{$sum:'$items.quantity'}}},{$sort:{bestProducts:-1}}])
+    const bestBrand = await Order.aggregate([{$unwind:'$items'},{$group:{_id:'$items.brandName',bestProducts:{$sum:'$items.quantity'}}},{$sort:{bestProducts:-1}}])
+
+console.log('the best is ',bestProducts)
+console.log('the best category is ',bestCategory)
+console.log('the best brand is ',bestBrand)
+
+    res.render('admin_Dashboard',{totalOrder,totalIncome,totalProducts})
     
    } catch (error) {
-    console.log(error.messge);
-    
+    console.log(error.message);
     return res.redirect('/errorpage')
     
    }

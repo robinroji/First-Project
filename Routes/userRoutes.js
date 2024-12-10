@@ -125,6 +125,8 @@ user_route.post('/select_address/:id',auth.isLogin,userController.select_address
 user_route.post('/payment/:id',auth.isLogin,userController.payment)
 user_route.get('/load_checkout_addAddress',auth.isLogin,userController.load_checkout_addAddress)
 user_route.post('/checkout_addAddress',auth.isLogin,userController.checkout_addAddress)
+user_route.get('/retryCheckout',auth.isLogin,userController.retryCheckout)
+user_route.get('/checkout2/:id',auth.isLogin,userController.checkOut2)
 
 
 //***** Order ****/
@@ -135,6 +137,7 @@ user_route.post('/updateOrder/:id',auth.isLogin,userController.updateOrder)
 user_route.post('/deleteOrder/:id',auth.isLogin,userController.deleteOrder)
 user_route.get('/orderPlaced',auth.isLogin,userController.orderPlaced)
 user_route.post('/returnOrder/:id',auth.isLogin,userController.retrunOrder)
+user_route.get('/downloadInvoice/:id',auth.isLogin,userController.downloadInvoice)
 
 //***** WishList *********/
 user_route.get('/wishList',auth.isLogin,userController.loadWishList)
@@ -145,6 +148,9 @@ user_route.get('/add_toCart/:id',auth.isLogin,userController.add_toCart)
 //***  Payment ************/
 user_route.post('/razorPay',auth.isLogin,userController.razorPayment)
 user_route.post('/verify_razorPay',auth.isLogin,userController.verify_razorPay)
+user_route.post('/failedPayment/:id',auth.isLogin,userController.failedPayment)
+user_route.get('/retryPage/:id',auth.isLogin,userController.retryPage)
+user_route.post('/retry-payment',auth.isLogin,userController.retry_payment)
 
 //** Coupen ********/
 user_route.post('/select_Coupen',auth.isLogin,userController.selectCoupen)

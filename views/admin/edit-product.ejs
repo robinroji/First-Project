@@ -68,18 +68,12 @@
                     <div class="invalid-feedback">Please upload up to 3 images.</div>
                 </div>
 
-
-               
-
-
-
-                
                 <div class="mb-3">
                     <label for="imagePreview" class="form-label">New Images Preview</label>
                     <div id="imagePreview" class="d-flex flex-wrap"></div>
                 </div>
                 <input  type="hidden" value=" "  id="offervalue"  name="offervalue" >
-                <button  id="remove-btn" cla onclick="removeOffer(event,'<%= product._id %>' , offervalue.value)">Remove Offer </button><br><br>
+                <button <% if(product.offerValue<=0) {%>disabled<% } %> id="remove-btn" cla onclick="removeOffer(event,'<%= product._id %>')">Remove Offer </button><br><br>
 
                 <div class="row">
                     <% productOffer.forEach((item) => {%> 
@@ -95,7 +89,7 @@
                                     <p class="card-text"><strong>Offer Expires :<%= item.expiryData %></strong></p>
                                     <p class="card-text"><strong>Description:<%= item.description %></strong></p>
 
-                                    <button class="offer-btn" <% if(offerxist) {%> disabled <% } %> onclick="productofferButton(event,'<%= item._id %>','<%= product._id%>')">Apply Offer </button>
+                                    <button class="offer-btn" <% if(product.offerValue>0) {%> disabled <% } %> onclick="productofferButton(event,'<%= item._id %>','<%= product._id%>')">Apply Offer </button>
                                 </div>
                             </div>
                         </div>
@@ -112,173 +106,9 @@
 </section>
 
 
-<div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cropperModalLabel">Crop Image</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <img id="cropImage" style="max-width: 100%;" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="cropButton" class="btn btn-primary">Crop & Save</button>
-            </div>
-        </div>
-    </div>
-</div>
 <script>
 
-
-
-document.getElementById('productImages').addEventListener('change', function (event) {
-    const files = event.target.files; // Get the selected files
-    const previewContainer = document.getElementById('imagePreview'); // Preview container
-    previewContainer.innerHTML = ''; // Clear previous previews
-
-    if (files.length > 3) {
-        alert('You can upload a maximum of 3 images.');
-        return;
-    }
-
-    Array.from(files).forEach((file) => {
-        if (!file.type.startsWith('image/')) {
-            alert('Only image files are allowed.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const imgElement = document.createElement('img');
-            imgElement.src = e.target.result; // Image source
-            imgElement.alt = file.name; // Alt text
-            imgElement.style = 'max-width: 150px; margin-right: 10px;'; // Style the image
-            previewContainer.appendChild(imgElement); // Add the image to the preview container
-        };
-        reader.readAsDataURL(file); // Read the file
-    });
-});
-
-
-
-let cropper; // Variable to hold the Cropper.js instance
-
-// Trigger the Cropper.js modal when an image is selected
-document.getElementById('productImages').addEventListener('change', function (event) {
-    const files = event.target.files;
-    if (files.length > 0) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const cropImage = document.getElementById('cropImage');
-            cropImage.src = e.target.result;
-            // Show the modal
-            const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
-            cropperModal.show();
-
-            // Initialize Cropper.js
-            cropper = new Cropper(cropImage, {
-                aspectRatio: 1, // Adjust the aspect ratio as needed
-                viewMode: 2,
-                autoCropArea: 1,
-            });
-        };
-        reader.readAsDataURL(files[0]);
-    }
-});
-
-
-
-// Handle the "Crop & Save" button click
-// Global variable to store cropped images
-let croppedImages = [];
-
-// Initialize the cropper when the modal opens
-const imageElement = document.getElementById('imageElement'); // Image to be cropped
-
-// Ensure Cropper.js is initialized after image is loaded
-imageElement.onload = function () {
-    cropper = new Cropper(imageElement, {
-        aspectRatio: 1,  // Adjust as per requirement
-        viewMode: 2,     // View mode for cropping behavior
-    });
-};
-
-// Crop and Save Button
-document.getElementById('cropButton').addEventListener('click', () => {
-    console.log('clicked')
-    // Check if the cropper is initialized
-    if (cropper) {
-        cropper.getCroppedCanvas().toBlob((blob) => {
-            // Check if the blob is valid
-            if (blob) {
-                // Create a new File object from the blob
-                const croppedFile = new File([blob], `cropped-image-${croppedImages.length + 1}.jpg`, { type: 'image/jpeg' });
-
-                // Add the cropped image file to the croppedImages array
-                croppedImages.push(croppedFile);
-
-                // Display the cropped image in the preview section
-                const imgDiv = document.createElement('div');
-                imgDiv.classList.add('image-preview', 'position-relative');
-                imgDiv.style.marginRight = '10px';
-
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(croppedFile);  // Display the cropped image using Object URL
-                img.style.maxWidth = '200px';
-
-                // Add a remove button for the cropped image
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'position-absolute');
-                removeBtn.style.top = '5px';
-                removeBtn.style.right = '5px';
-                removeBtn.textContent = 'Remove';
-                removeBtn.onclick = function () {
-                    // Remove the image from croppedImages array and DOM
-                    const index = croppedImages.indexOf(croppedFile);
-                    if (index > -1) {
-                        croppedImages.splice(index, 1);
-                    }
-                    imgDiv.remove();
-
-                    // Update file input label if no images remain
-                    const fileInputLabel = document.querySelector('label[for="productImages"]');
-                    if (croppedImages.length === 0) {
-                        fileInputLabel.textContent = 'Select one or more images';
-                        fileInputLabel.style.color = 'black';
-                    }
-                };
-
-                // Append the cropped image and remove button to the preview section
-                imgDiv.appendChild(img);
-                imgDiv.appendChild(removeBtn);
-                const preview = document.getElementById('imagePreview');
-                preview.appendChild(imgDiv);
-
-                // Optionally, update label text after cropping
-                const fileInputLabel = document.querySelector('label[for="productImages"]');
-                fileInputLabel.textContent = 'Images selected';
-                fileInputLabel.style.color = 'green';
-
-                // Hide the modal after cropping
-                const modal = new bootstrap.Modal(document.getElementById('cropperModal'));
-                modal.hide();
-            } else {
-                console.error('Failed to create a blob from the cropped canvas.');
-            }
-        });
-    } else {
-        console.error('Cropper.js is not initialized or image not loaded.');
-    }
-});
-
-
-
-</script>
+///
 
 
 
@@ -288,13 +118,13 @@ document.getElementById('cropButton').addEventListener('click', () => {
 
 
 
-<script>
 
 
+///
 let  offerAmount = 0
 
-async function removeOffer(event,productId,offerAmount){
-    console.log('off am',offerAmount)
+async function removeOffer(event,productId){
+    console.log('off am',)
     event.preventDefault()
     try {
         const response = await fetch('/product/removeOffer',{
@@ -303,12 +133,12 @@ async function removeOffer(event,productId,offerAmount){
             headers:{
                 'Content-Type':'application/json',
             },
-            body:JSON.stringify({productId,offerAmount})
+            body:JSON.stringify({productId})
         })
 
         const data = await response.json();
 
-        if(data){
+        if(data.success){
             const buttons = document.querySelectorAll('.offer-btn');
 
             buttons.forEach(button => {
@@ -318,16 +148,22 @@ async function removeOffer(event,productId,offerAmount){
 
 
             document.getElementById('saleprice').value = data.actualPrice
-        }else{
-            console.log('else workking')
-        }
-
-        Swal.fire({
+            Swal.fire({
                 title: 'Success',
                 text: 'Offer removed successfully!',
                 icon: 'success',
                 allowOutsideClick: false,
             });
+        }else{
+            Swal.fire({
+                title: 'Error',
+                text: data.message||'Offer removed successfully!',
+                icon: 'error',
+                allowOutsideClick: false,
+            });
+        }
+
+        
 
     } catch (error) {
         console.log(error.message)

@@ -1,0 +1,66 @@
+<%- include('../layouts/admin_header.ejs') %>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Offers </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Available Offers</h2>
+        <div>
+            <a href="/product/load_productOffer" class="btn btn-primary">Creat an Offer</a>
+        </div>
+        <br>
+
+        <% if (productOffer.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Coupon Code</th>
+                            <th>Discount (%)</th>
+                            <th>startDate</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Update</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% productOffer.forEach(offer => { %>
+                            <tr>
+                                <td><strong><%= offer.name %></strong></td>
+                                <td><%= offer.discountPercentage %> %</td>
+                                <td> <%=offer.startDate %></td>
+                                <td><%= new Date(offer.expiryData).toLocaleDateString() %></td>
+                                <td>
+                                    <% if (new Date(offer.expiryData) > new Date()) { %>
+                                        <span class="badge bg-success">Active</span>
+                                    <% } else { %>
+                                        <span class="badge bg-danger">Expired</span>
+                                    <% } %>
+                                </td>
+                                <td><%= offer.description %></td>
+                                <td><a href="/product/load_editProductOffer/<%= offer.id %>" class="btn btn-danger btn-outline-primary">
+                                    <i class="fas fa-edit"></i></td>
+                                    
+
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="alert alert-info text-center">
+                No coupens available at the moment.
+            </div>
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+<%- include('../layouts/admin_footer.ejs') %>
+

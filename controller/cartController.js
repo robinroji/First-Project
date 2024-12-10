@@ -22,6 +22,7 @@ const cart_Page = async(req,res)=>{
         
 
         const cart = await Cart.findOne({user:req.session.user_id}).populate('items.product')
+        console.log('cart is ',cart)
 
         if(cart&&cart.items.length>0){
             cart.totalSalesPrice = cart.items.reduce((total, item) => total +  item.totalPrice * item.quantity, 0);
@@ -53,6 +54,7 @@ const cart_Page = async(req,res)=>{
 const move_to_cart = async(req,res)=>{
     console.log('loging into the cart page');
     
+    
 
  
     try { 
@@ -83,7 +85,7 @@ const move_to_cart = async(req,res)=>{
                 cart = new Cart({
                     user:user._id,
                     items:[],
-                    totalRegularPrice :0,
+                    totalRegularPrice :product.product_sale_price*product.product_quantity,
                     totalSalesPrice :0,
                     discount : 0,
                     totalItems : 0,
@@ -94,7 +96,7 @@ const move_to_cart = async(req,res)=>{
 
             if (existing) {
                 console.log('Product exists in the cart');
-                req.flash('success_msg','done')
+                req.flash('success_msg','Product Alredy exist in the Cart!')
                 res.redirect('/cart_page')
                     
 
@@ -107,7 +109,7 @@ const move_to_cart = async(req,res)=>{
 
                 product:product._id,
                 quantity:1,
-                totalPrice:product.product_sale_price 
+                totalPrice:product.product_sale_price
 
             })
            
@@ -150,10 +152,12 @@ const   delete_product = async(req,res)=>{
 
         await Cart.findOneAndUpdate(
             { user: userId },                    
-            {$pull: { items: { product: productId } } },  
+            {$pull: { items: { product: productId } },$set:{totalSalesPrice:0}},  
            
             { new: true }                          
         );
+        
+       
         
         
        

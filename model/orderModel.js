@@ -5,7 +5,7 @@ const ObjectId = Schema.Types.ObjectId
 const orderItemsModel = new Schema({
     product:{
         type:ObjectId,
-        ref:'products',
+        ref:'Product',
         required:true
     },
     productName:{
@@ -18,12 +18,12 @@ const orderItemsModel = new Schema({
     },
     category:{
         type:ObjectId,
-        ref:'categories',
+        ref:'Category',
         required:true
     },
     categoryName:{
         type:String,
-        required:true
+        required:false
     },
     quantity:{
         type:Number,
@@ -116,7 +116,7 @@ const orderModel = Schema({
     orderStatus:{
         type:String,
         required:false,
-        enum:['pending','confirmed','shipped','delivered','cancelled','returned'],
+        enum:['pending','confirmed','shipped','Delivered','cancelled','returned'],
         default:'pending'
     },
     paymentMethod:{

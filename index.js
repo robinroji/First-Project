@@ -24,7 +24,6 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use(flash());
 app.use(nocache())
-// app.use(morgan('dev'))
 
 app.use(session({
   secret: 'your_secret_key',

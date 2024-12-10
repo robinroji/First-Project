@@ -44,27 +44,40 @@
         font-size: 0.9em;
         margin-top: 5px;
     }
+    .nav-link {
+        color: #007bff;
+        margin-bottom: 15px;
+        display: block;
+        font-size: 1rem;
+    }
+    .nav-link:hover {
+        text-decoration: underline;
+    }
 </style>
 
 <body>
-    <div class="container mt-4">
+    <div class="container mt-4 pt-4" style="background-color: lightgray; border-radius: 20px;"  >
         <div class="row">
             <!-- Sidebar -->
-            <!-- <div class="col-md-3">
-                <div class="profile-sidebar">
-                    <h3>Account</h3>
-                    <a href="#" class="nav-link">Overview</a>
-                    <a href="/orders" class="nav-link">My Orders</a>
-                    <a href="/addressPage" class="nav-link">Manage Address</a>
-                    <a href="#" class="nav-link">Wallet</a>
-                    <a href="/logout" class="nav-link">Logout</a>
-                </div>
-            </div> -->
+            <div class="col-md-3">
+                <div class="profile-sidebar" style="background-color: lightsteelblue;">
+        <h3>Account</h3>
+        <a href="/user_profile" class="nav-link">Overview</a>
+        <a href="/orders" class="nav-link">My Orders</a>
+        <a href="/addressPage" class="nav-link">Manage Address</a>
+        <a href="/wallet" class="nav-link">Wallet</a>
+        <a href="/logout" class="nav-link">Logout</a>
+    </div>
+            </div>
 
             <!-- Main Content -->
             <div class="col-md-9">
                 <h4 class="mb-4">Manage Address</h4>
                 <a href="/get_add_address" class="btn btn-info mb-4">Add Address</a>
+
+                
+
+
 
                 <!-- Address Information Forms -->
                 <% user.address.forEach((address, index) => { %>
