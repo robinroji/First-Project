@@ -138,6 +138,7 @@
     <script>
         function validateForm(index) {
             const houseName = document.getElementById(`houseName${index}`).value.trim();
+            document.getElementById(`houseName${index}`).value =houseName
             const pinCode = document.getElementById(`pinCode${index}`).value.trim();
             const po = document.getElementById(`po${index}`).value.trim();
             const location = document.getElementById(`location${index}`).value.trim();

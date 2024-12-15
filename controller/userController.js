@@ -14,6 +14,8 @@ const Coupen = require('../model/coupenModel')
 const mongoose =require('mongoose')
 const Wallet = require('../model/walletModel')
 const ReturnOrder= require('../model/returnOrderModel')
+const PDFDocument = require('pdfkit');
+
 
 
 
@@ -101,9 +103,10 @@ const   securePassword = async(password)=>{
 ///************************/ LOAD REGISTER PAGE ////////////////////////////////////////////
 
 const loadRegister = async(req,res)=>{
+    let message=null
 
     try {
-        res.render('registration')
+        res.render('registration',{message})
         
     } catch (error) {
         console.log('error in the rendering');
@@ -407,7 +410,9 @@ const  get_homePage  = async (req,res)=>{
 
 const get_kids = async(req,res)=>{
     try {
-        res.render('kids')
+        const product = await Product.find({product_category:'66c78d2879c7f4f9a7662631'})
+
+        res.render('kids',{product})
         
     } catch (error) {
         console.log(error.message);
@@ -421,7 +426,10 @@ const get_kids = async(req,res)=>{
 
 const get_mens = async(req,res)=>{
     try {
-        res.render('mens')
+
+        const product = await Product.find({product_category:'66fbfa8890265e7603416406'})
+        console.log('mens is ',product)
+        res.render('mens',{product})
         
     } catch (error) {
         console.log(error.message);
@@ -436,7 +444,9 @@ const get_mens = async(req,res)=>{
 
 const get_womens = async(req,res)=>{
     try {
-        res.render('womens')
+        const product = await Product.find({product_category:'66c78d3279c7f4f9a7662634'})
+
+        res.render('womens',{product})
         
     } catch (error) {
         console.log(error.message);
@@ -741,10 +751,20 @@ const passEdit = async(req,res)=>{
 }
 //********** Checkout ******/
 loadCheckout = async (req, res) => {
+
+    const userId = req.session.user_id;
+    const cart = await Cart.findOne({ user: userId }).populate({ path: 'items.product'})
+    const validCart = await Cart.findOne({ user: userId }).populate('items')
+    if(validCart.items.length<=0){
+        console.log('no cart items found ')
+        
+        return res.redirect('/errorPage')
+    }
+    
+    
     console.log('This is the loadCheckout');
     try {
         // Assuming req.session.userId contains the logged-in user's ObjectId
-        const userId = req.session.user_id;
         
         if (!userId) {
             throw new Error('User not logged in');
@@ -756,11 +776,11 @@ loadCheckout = async (req, res) => {
         // const user = await User.findById(userId);
         // console.log('User details:', user);
        
+        const wallet = await Wallet.findOne({user:req.session.user_id})
 
         // Fetch cart items for the logged-in user
-        const cart = await Cart.findOne({ user: userId }).populate({ path: 'items.product'})
 
-        console.log('the total price of first item is ',cart.items[0].totalPrice)
+        console.log('the total sales price is ',cart.totalSalesPrice)
         const userCart = await Cart.findById(userId)
         
 
@@ -792,7 +812,7 @@ loadCheckout = async (req, res) => {
         let  temp =0
         
         // Pass the cartIt object to the EJS view
-        res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp}, );
+        res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp,wallet}, );
         
     } catch (error) {
         console.log('Error:', error.message);
@@ -927,7 +947,7 @@ const placeOrder = async (req, res) => {
 
         const {cartId,addressId,coupenOffer,totalSalesPrice}= req.body
         const theCart = await Cart.findById(cartId).populate('items')
-            console.log('bbb',totalSalesPrice)
+            // console.log('bbbbb',selectedPaymentMethods)
         const paymentMethod = req.body.paymentMethod || 'COD'; 
     
         if (!addressId) {
@@ -937,6 +957,8 @@ const placeOrder = async (req, res) => {
         const address = await Address.findById(addressId);
         // console.log('the address needed is ',address)
         const cart = await Cart.findById(cartId).populate({ path: 'items.product', populate: { path: 'product_category' } });
+
+        console.log('the main carttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt is ', cart.totalSalesPrice)
     
         if (!address || !cart) {
             return res.status(404).send('Cart or address not found');
@@ -975,7 +997,7 @@ const placeOrder = async (req, res) => {
             totalAmount: cart.totalSalesPrice,
             orderDate: Date.now(),
             orderStatus: 'confirmed',
-            onlinePaymentId: payment || null,
+            onlinePaymentId:null,
             paymentMethod:paymentMethod || 'COD',
             paymentStatus: ['RazorPay', 'wallet'].includes(paymentMethod) ? 'completed' : 'pending',
             shippingAddress:addressId
@@ -1069,6 +1091,7 @@ const OrderDetailPage = async(req,res)=>{
         const order = await Order.findById(orderId).populate('user')
         const orderAddress = await Order.findById(orderId).populate('shippingAddress')
         console.log(order)
+        console.log("the ordder address is ",orderAddress)
         res.render('OrderDetailPage',{order,orderAddress})
     } catch (error) {
         console.log(error.message);
@@ -1100,10 +1123,21 @@ const deleteOrder = async (req, res) => {
         // Check if the order is COD
         const cod = await Order.findOne({ _id: req.params.id, paymentMethod: 'COD' });
         console.log('method', cod);
+        console.log('the params is for',req.params.id)
+        let orderId = await Order.findById(req.params.id).populate('items')
+        console.log('searching for the id is ',orderId)
 
         // Cancel the order
         await Order.findByIdAndUpdate(req.params.id, { orderStatus: 'cancelled' }, { new: true });
 
+        console.log('the product need is ',orderId.items[0].product)
+
+        orderId.items.forEach(async function (item){
+            await Product.findOneAndUpdate({_id:item.product},{$inc:{product_quantity:item.quantity}})
+         })
+
+        const addQuantity = await Product.findOne({_id:orderId.items[0].product})
+        console.log('the prooooooooooooooooooooooooodddddddddddddduuuuuuuuuuuuuuucccccccccccccctttttttttt is',addQuantity)
         const orderData = await Order.findOne({ _id: req.params.id });
 
         if(!cod){
@@ -1354,8 +1388,12 @@ const applyCoupen = async(req,res)=>{
 
             let discountAmount = 0
             let finalPrice
-            discountAmount = (coupon.discountPercentage / 100) * salesPrices
-            finalPrice = cart.totalSalesPrice-discountAmount
+            discountAmount = Math.round((coupon.discountPercentage / 100) * salesPrices)
+
+            if(discountAmount>coupon.maxDiscountAmount){
+                console.log('limit crossed ')
+            }
+            finalPrice = Math.round(cart.totalSalesPrice-discountAmount)
             console.log('am',discountAmount)
 
             cart.totalSalesPrice = finalPrice;
@@ -1367,18 +1405,22 @@ const applyCoupen = async(req,res)=>{
         // console.log(req.session.user_id)
             console.log('dddd',discountAmount)
             console.log('fff',finalPrice)
-            res.json({ amount:discountAmount,finalPrice});
+            res.status(200).json({ amount:discountAmount,finalPrice,couponCode});
+            console.log('here is the response')
     } catch (error) {
-        console.log(error.message);
+        console.log(error.message)
+        console.log('enterd in the catch')
         res.redirect('/errorPage')
         
         
     }
 }
 
-
+//************************* */
 const returnAmount = async (req,res)=>{
+    console.log('entering to return amount')
     const {couponCode} =req.body
+    console.log('the coupencode is the :',couponCode)
     try {
        
 
@@ -1388,6 +1430,7 @@ const returnAmount = async (req,res)=>{
         });
                
         if (existingCoupon) {
+            console.log('yes existing ')
             await Coupen.updateOne(
                 { code: couponCode },
                 { $pull: { usedBy: req.session.user_id } }
@@ -1416,19 +1459,51 @@ const returnAmount = async (req,res)=>{
 
 //*******  wallet   *********/
 
-const wallet = async(req,res)=>{
+const wallet = async (req, res) => {
     try {
-        const wallet = await Wallet.findOne({ user: req.session.user_id }).sort({ createdAt:-1 }); 
-        
-        res.render('wallet',{wallet})
-        console.log('the wallet iss ',wallet)
-        
+        const ITEMS_PER_PAGE = 5; // Set the number of items per page
+        const currentPage = parseInt(req.query.page) || 1; // Get current page from query parameters, default is 1
+
+        // Fetch the wallet for the user
+        const wallet = await Wallet.findOne({ user: req.session.user_id }).sort({ createdAt: -1 });
+
+        if (!wallet) {
+            // If wallet doesn't exist, create a new one
+            const newWallet = new Wallet({
+                user: req.session.user_id,
+                balance: 0
+            });
+            await newWallet.save();
+            // Fetch the newly created wallet
+            const wallet = await Wallet.findOne({ user: req.session.user_id }).sort({ createdAt: -1 });
+            let transactions=0
+            return res.render('wallet', { wallet,transactions });
+        }
+
+        // Get the total number of transactions and calculate total pages
+        const totalTransactions = wallet.transactions.length;
+        const totalPages = Math.ceil(totalTransactions / ITEMS_PER_PAGE);
+
+        // Sort the transactions in descending order (most recent first)
+        const sortedTransactions = wallet.transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Paginate the transactions
+        const transactions = sortedTransactions.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+        // Render the wallet page with paginated transactions
+        res.render('wallet', {
+            wallet,
+            transactions,
+            currentPage,
+            totalPages,
+            totalTransactions
+        });
     } catch (error) {
         console.log(error.message);
-        return res.redirect('/errorPage')
-      
+        return res.redirect('/errorPage');
     }
 }
+
 
 //***** load_checkout_addAddress */
 const load_checkout_addAddress = async(req,res)=>{
@@ -1467,7 +1542,7 @@ console.log('address is ',newAddress);
 return res.redirect('/checkOut')
 
     } catch (error) {
-        consol.log(error.message)
+        console.log(error.message)
             res.redirect('/errorPage')
         
         
@@ -1695,10 +1770,11 @@ const retry_payment = async(req,res)=>{
 
 const retryCheckout = async(req,res)=>{
     try {
+        const wallet = await Wallet.findOne({user:req.session.user_id}).populate('transactions')
         const {orderId} = req.body
         console.log(orderId)
 
-        res.render('retryCheckout')
+        res.render('retryCheckout',{wallet})
     } catch (error) {
         console.log(error.message)
         
@@ -1715,7 +1791,7 @@ const checkOut2 = async (req, res) => {
         if (!userId) {
             throw new Error('User not logged in');
         }
-
+        const wallet = await Wallet.findOne({user:req.session.user_id})
         console.log('User ID:', userId);
 
         // Fetch the order details by ID and populate necessary fields
@@ -1776,8 +1852,7 @@ const checkOut2 = async (req, res) => {
             totalSalesPrice,
             coupen,
             cart,
-            
-
+            wallet,
             temp,
             onlyItems: {totalSalesPrice} // Pass the cart items as onlyItems
         });
@@ -1789,11 +1864,143 @@ const checkOut2 = async (req, res) => {
 
 //********  downloadInvoice   */
 
-const downloadInvoice = async(req,res)=>{
+const downloadInvoice = async (req, res) => {
     try {
+        console.log(req.params.id);
 
-       
-    
+        // Fetch the order details from the database
+        const order = await Order.findById(req.params.id)
+            .populate('user') // Populate user details
+            .populate('items.product') // Populate product details
+            .populate('shippingAddress'); // Populate shipping address
+
+        console.log(order);
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        // Set headers for the PDF file download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=Invoice_${order._id}.pdf`
+        );
+
+        const doc = new PDFDocument({ margin: 30 });
+        doc.pipe(res);
+
+        // Header Section with Company Info
+        doc.rect(30, 30, 540, 70).fill('#f5f5f5'); // Light background for the header
+        doc.fillColor('#000').fontSize(20).text('ArmorEdge', 50, 50);
+        doc.fontSize(10).text('Phone: 9285888432 | Email: armoredge@gmail.com', 50, 70);
+        doc.fontSize(12).text(`Invoice: ${order._id}`, 400, 60, { align: 'right' });
+        doc.fontSize(10).text(`Date: ${new Date(order.orderDate).toLocaleDateString()}`, 400, 30, { align: 'right' });
+        doc.moveDown(2);
+
+        // Line separator
+        doc.moveTo(30, 110).lineTo(570, 110).stroke();
+
+        // Customer Details Section
+        doc.fontSize(14).fillColor('#000').text('Customer Details:', 30, 120);
+        doc.fontSize(12).text(`Name: ${order.user.firstname} ${order.user.lastname}`, 50, 140);
+        doc.text(`Email: ${order.user.email}`, 50, 155);
+        doc.text(
+            `Shipping Address: ${order.shippingAddress.location}, ${order.shippingAddress.po}, ${order.shippingAddress.state} - ${order.shippingAddress.pinCode}`,
+            50,
+            170
+        );
+        doc.text(`Payment Method: ${order.paymentMethod}`, 50, 185);
+        doc.moveDown(2);
+
+        // Line separator
+        doc.moveTo(30, 200).lineTo(570, 200).stroke();
+
+        // Items Section
+        doc.fontSize(14).text('Items:', 30, 220);
+        doc.moveDown(0.5);
+
+        // Table Header
+        const tableTop = 240;
+        const itemColumnWidths = [30, 250, 80, 80, 80];
+        const headers = ['S.No', 'Product Name', 'Quantity', 'Unit Price', 'Total'];
+        headers.forEach((header, index) => {
+            doc.fontSize(12)
+                .text(header, 30 + itemColumnWidths.slice(0, index).reduce((a, b) => a + b, 0), tableTop, {
+                    width: itemColumnWidths[index],
+                    align: 'center',
+                });
+        });
+
+        // Line separator for table header
+        doc.moveTo(30, tableTop + 15).lineTo(570, tableTop + 15).stroke();
+
+        // Table Rows
+        let rowTop = tableTop + 20;
+        order.items.forEach((item, index) => {
+            const total = (item.quantity * item.price).toFixed(2);
+            const columns = [
+                `${index + 1}`,
+                `${item.productName}`,
+                `${item.quantity}`,
+                `${item.price.toFixed(2)}`,
+                `${total}`,
+            ];
+            columns.forEach((text, i) => {
+                doc.fontSize(10)
+                    .text(text, 30 + itemColumnWidths.slice(0, i).reduce((a, b) => a + b, 0), rowTop, {
+                        width: itemColumnWidths[i],
+                        align: 'center',
+                    });
+            });
+            rowTop += 20;
+        });
+
+        // Order Totals Section
+        doc.moveDown(1);
+        doc.moveTo(30, rowTop + 10).lineTo(570, rowTop + 10).stroke();
+        doc.text(`Delivery Charges: Free`, 400, rowTop + 50, { align: 'right' });
+        doc.fontSize(14).text(`Total: ${order.totalAmount.toFixed(2)}`, 400, rowTop + 70, {
+            align: 'right',
+            bold: true,
+        });
+
+        // Footer Section
+        doc.moveDown(4);
+        doc.fontSize(10).text('Thank you for your purchase!', { align: 'center' });
+        doc.text('If you have any questions, contact us at armoredge@gmail.com', { align: 'center' });
+
+        // Finalize the PDF
+        doc.end();
+    } catch (error) {
+        console.log(error.message);
+        res.redirect('/errorPage');
+    }
+};
+
+///****** walletPay */
+
+const walletPay = async(req,res)=>{
+    try {
+        const {totalAmount} = req.body
+        console.log('totalAmount is ',totalAmount)
+
+        const userWallet = await Wallet.findOne({user:req.session.user_id}).populate('user')
+        console.log('ddds',userWallet)
+
+        const wallet = await Wallet.findOneAndUpdate({user:req.session.user_id},{balance:userWallet.balance-totalAmount},{new:true})
+        console.log('wallet amount is ',wallet)
+
+        userWallet.transactions.push({
+            amount:totalAmount,
+            status:'success',
+            type:'debit',
+            walletFrom:'Wallet Pay'
+
+        })
+
+        await userWallet.save()
+
+        res.status(200).json({success:true})
         
     } catch (error) {
         console.log(error.message)
@@ -1801,6 +2008,7 @@ const downloadInvoice = async(req,res)=>{
         
     }
 }
+
 
 
 
@@ -1861,7 +2069,8 @@ module.exports={
     retry_payment,
     retryCheckout,
     checkOut2,
-    downloadInvoice
+    downloadInvoice,
+    walletPay
     
 
 }

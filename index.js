@@ -19,6 +19,9 @@ const admin_auth = require('./middleware/admin_auth')
 
 mongoose.connect(process.env.MONGO_URL)
 
+app.use(morgan('tiny'));
+
+
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())

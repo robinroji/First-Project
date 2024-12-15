@@ -82,7 +82,7 @@
 </style>
 </head>
 <body>
-<div class="container profile-container " style="background-color:lightgrey;">
+<div class="container profile-container" style="background-color:lightgrey;">
 
     <script> 
         <% if (typeof message !== 'undefined' && message) { %>
@@ -93,14 +93,12 @@
                 confirmButtonText: 'OK'
             });
         <% } %>
-
     </script>
-  
 
     <!-- Sidebar -->
     <div class="profile-sidebar">
         <h3>Account</h3>
-        <a href="#" class="nav-link">Overview</a>
+        <a href="/user_profile" class="nav-link">Overview</a>
         <a href="/orders" class="nav-link">My Orders</a>
         <a href="/addressPage" class="nav-link">Manage Address</a>
         <a href="/wallet" class="nav-link">Wallet</a>
@@ -113,9 +111,9 @@
             <div>
                 <h2><%= user.firstname %></h2>
                 <p><%= user.email %></p>
-
             </div>
         </div>
+
         <form action='/personal_edit/' method="post" onsubmit="return validateForm()">
             <div class="section-title">Personal Information</div>
         
@@ -142,36 +140,31 @@
         
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
-        
-        
 
-
-        <form action='/contact_edit' method="post">
-
+        <form action='/contact_edit' method="post" onsubmit="return validatePhoneNumber()">
             <div class="section-title">Contact Information</div>
-
+        
             <div class="row">
                 <div class="col-md-6 form-group">
                     <label for="mobile">Mobile Number</label>
-                    <input type="text" id="mobile" name="mobile" class="form-control" placeholder="+91 1234567890" value="<%= user.phone %>">
+                    <input id="mobile" type="text" name="mobile" placeholder="Enter mobile number" value="<%= user.phone %>" required>
+                    <div id="phoneError" class="error-msg" style="color: red;"></div>
                 </div>
                 <div class="col-md-6 form-group">
                     <label for="alternateMobile">Alternate Number (Optional)</label>
                     <input type="text" id="alternateMobile" name="alternateMobile" class="form-control" placeholder="+91 0987654321" value="<%= user.alt_phone %>">
+                    <small id="phoneError" class="text-danger"></small>
                 </div>
             </div>
-
-
-              
+        
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
+        
         <br>
 
-        <form action='/pass_edit' method="post" id="passwordForm" >
+        <form action='/pass_edit' method="post" id="passwordForm">
 
-
-
-            <div class="section-title"   >Change Password</div>
+            <div class="section-title">Change Password</div>
 
             <div class="row">
                 <div class="col-md-6 form-group">
@@ -181,60 +174,33 @@
                 <div class="col-md-6 form-group">
                     <label for="newPassword">New Password</label>
                     <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="New Password">
-                    <div class="error"  id="newPasswordError"> </div>
+                    <div class="error" id="newPasswordError"> </div>
                 </div>
 
                 <div class="col-md-6 form-group">
-                    <label for="confirmNewPassword"> Confirm New Password</label>
+                    <label for="confirmNewPassword">Confirm New Password</label>
                     <input type="password" id="confirmNewPassword" name="confirmNewPassword" class="form-control" placeholder="Confirm New Password">
-                    <div class="error"  id="confirmNewPasswordError"> </div>
+                    <div class="error" id="confirmNewPasswordError"> </div>
                 </div>
-
             </div>
 
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
         <br>
-
-
     </div>
 </div>
-     
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-
-
-<!-- <script>
-    document.getElementById('passwordForm').addEventListener('submit', function (event) {
-        const newPassword = document.getElementById('newPassword').value.trim();
-        const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
-
-        let isValid = true; // Declare `let` explicitly
-
-        if (confirmNewPassword !== newPassword) {
-            document.getElementById('confirmNewPasswordError').innerText = 'Passwords do not match.';
-            isValid = false;
-        }
-
-        if (!isValid) {
-            event.preventDefault(); // Prevent form submission if validation fails
-        }
-        alert('password changed')
-    });
-</script> -->
 
 <script>
     function validateForm() {
         let isValid = true;
+        let check = [',', '/', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '+', '=', '{', '}', '[', ']', '|', '\\', ':', ';', '"', "'", '<', '>', '?', '`', '~']; 
 
         // Validate First Name
         const firstName = document.getElementById('firstName');
         const firstNameError = document.getElementById('firstNameError');
-        if (!firstName.value || firstName.value.length < 2 || firstName.value.length > 50) {
+        if (!firstName.value || firstName.value.length < 2 || firstName.value.length > 50 || !firstName.value.trim() || Number.isInteger(Number(firstName.value)) || check.some((char) => firstName.value.includes(char))) {
             firstNameError.textContent = "First Name must be between 2 and 50 characters.";
             isValid = false;
         } else {
@@ -244,12 +210,33 @@
         // Validate Last Name
         const lastName = document.getElementById('lastName');
         const lastNameError = document.getElementById('lastNameError');
-        if (!lastName.value || lastName.value.length < 2 || lastName.value.length > 50) {
+        if (!lastName.value || lastName.value.length < 2 || lastName.value.length > 50 || !lastName.value.trim() || Number.isInteger(Number(lastName.value)) || check.some((char) => lastName.value.includes(char))) {
             lastNameError.textContent = "Last Name must be between 2 and 50 characters.";
             isValid = false;
         } else {
             lastNameError.textContent = "";
         }
+        
+        // Validate Phone Number
+        function validatePhoneNumber() {
+        let isValid = true;
+        let phone = document.getElementById('mobile');
+        let phoneError = document.getElementById('phoneError');
+        let phonePattern = /^[0-9]{10}$/; // Regular expression for exactly 10 digits
+
+        // Validate Mobile Number
+        if (!phone.value.trim()) {
+            phoneError.textContent = 'Phone number is required.';
+            isValid = false;
+        } else if (!phonePattern.test(phone.value.trim())) {
+            phoneError.textContent = 'Phone number must be exactly 10 digits.';
+            isValid = false;
+        } else {
+            phoneError.textContent = ''; // Clear any previous error message
+        }
+
+        return isValid=true;
+    }
 
         // Validate Date of Birth
         const dob = document.getElementById('dob');
@@ -270,8 +257,5 @@
         return isValid;
     }
 </script>
-
-
-
 
 <%-include ('../layouts/user_footer') %>

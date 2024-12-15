@@ -17,9 +17,9 @@
                     <p>Unfortunately, your payment could not be processed. Please try again.</p>
                     <hr>
                 </div>
-                <form action="/retry-payment" method="POST">
+                <form action="/orders" method="get">
                     <input type="hidden" name="paymentId" value="<%= paymentId %>">
-                    <button type="submit" class="btn btn-primary">Retry Payment</button>
+                    <button type="submit" class="btn btn-primary">Go to OrderList</button>
                 </form>
                 <a href="/" class="btn btn-secondary mt-3">Go to Homepage</a>
             </div>

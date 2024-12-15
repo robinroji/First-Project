@@ -1,4 +1,29 @@
 <%- include('../layouts/admin_header') %>
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: lightslategrey;
+      font-weight: bold;
+    }
+    caption {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
 <section class="content-main">
     <div class="content-header">
         <div>
@@ -71,7 +96,65 @@
             </div>
             
     </div>
-   
+
+    <body>
+        <!-- Best Products Table -->
+        <table>
+            <caption>Best Products</caption>
+            <thead>
+              <tr>
+                <th>No:</th>
+                <th>Product Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topProducts.forEach((item, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td><%= item %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+          
+      
+        <!-- Best Categories Table -->
+        <table>
+            <caption>Best Products</caption>
+            <thead>
+              <tr>
+                <th>No:</th>
+                <th>Product Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topCategory.forEach((item, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td><%= item %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+      
+        <!-- Best Brands Table -->
+        <table>
+            <caption>Best Products</caption>
+            <thead>
+              <tr>
+                <th>No:</th>
+                <th>Product Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topBrand.forEach((item, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td><%= item %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
    
 </section> 
 </main>    

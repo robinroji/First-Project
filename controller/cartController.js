@@ -24,7 +24,26 @@ const cart_Page = async(req,res)=>{
         const cart = await Cart.findOne({user:req.session.user_id}).populate('items.product')
         console.log('cart is ',cart)
 
+        if(!cart){
+            console.log('check 3')
+
+            const cart  = new Cart({
+
+                user:req.session.user_id,
+                items:[],
+                totalRegularPrice:0,
+                totalSalesPrice:0,
+                discount:0,
+                totalItems:0
+
+            })
+            cart.save()
+            const userCart = await Cart.findOne({user:req.session.user_id}).populate('items.product')
+            return  res.render('cartPage',{userCart})
+        }
+            console.log('check 1')
         if(cart&&cart.items.length>0){
+            console.log('check 2')
             cart.totalSalesPrice = cart.items.reduce((total, item) => total +  item.totalPrice * item.quantity, 0);
          cart.totalRegularPrice = cart.items.reduce((total, item) => total + item.product.product_regular_price * item.quantity, 0);
 
@@ -54,7 +73,11 @@ const cart_Page = async(req,res)=>{
 const move_to_cart = async(req,res)=>{
     console.log('loging into the cart page');
     
-    
+    const productId = req.params.id;
+
+    const theProduct = await Product.findById(productId)
+    console.log('teh product is ',theProduct)
+
 
  
     try { 
@@ -92,7 +115,7 @@ const move_to_cart = async(req,res)=>{
 
                 })
             }
-            const existing = await Cart.findOne({ 'items.product': product });
+            const existing = await Cart.findOne({ user:req.session.user_id,'items.product': product});
 
             if (existing) {
                 console.log('Product exists in the cart');
@@ -112,7 +135,8 @@ const move_to_cart = async(req,res)=>{
                 totalPrice:product.product_sale_price
 
             })
-           
+           cart.totalSalesPrice+= theProduct.product_sale_price
+           cart.totalRegularPrice= cart.totalRegularPrice+theProduct.product_regular_price
 
             // cart.totalRegularPrice = cart.items.reduce((total, item) => total + item.product.product_regular_price * item.quantity, 0);
             // cart.totalSalesPrice = cart.items.reduce((total, item) => total +  item.product.product_sale_price * item.quantity, 0);
@@ -152,7 +176,7 @@ const   delete_product = async(req,res)=>{
 
         await Cart.findOneAndUpdate(
             { user: userId },                    
-            {$pull: { items: { product: productId } },$set:{totalSalesPrice:0}},  
+            {$pull: { items: { product: productId } },$set:{totalSalesPrice:0,totalRegularPrice:0}},  
            
             { new: true }                          
         );

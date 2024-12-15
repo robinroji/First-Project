@@ -34,7 +34,7 @@ user_route.set('views','./views/users');
 
 
 //**user register**/
-user_route.get('/register',userController.loadRegister)
+user_route.get('/register',auth.isLogout, userController.loadRegister)
 user_route.post('/register',userController.userRegister)
 
 
@@ -69,6 +69,7 @@ user_route.get('/logout',userController.logout)
 
 //**errorPage handling**/
 user_route.get('/errorPage',userController.errorpage)
+
 
 
 //** inside the page**/
@@ -151,6 +152,7 @@ user_route.post('/verify_razorPay',auth.isLogin,userController.verify_razorPay)
 user_route.post('/failedPayment/:id',auth.isLogin,userController.failedPayment)
 user_route.get('/retryPage/:id',auth.isLogin,userController.retryPage)
 user_route.post('/retry-payment',auth.isLogin,userController.retry_payment)
+user_route.post('/walletPay',auth.isLogin,userController.walletPay)
 
 //** Coupen ********/
 user_route.post('/select_Coupen',auth.isLogin,userController.selectCoupen)
@@ -161,6 +163,7 @@ user_route.post('/returnAmount',auth.isLogin,userController.returnAmount)
 user_route.get('/wallet',userController.wallet)
 
 
+// user_route.get('*',userController.errorpage)
 
 module.exports = user_route;
 

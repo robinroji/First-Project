@@ -206,7 +206,7 @@
         <!-- Right Section (Payment and Order Summary) -->
         <div class="order-summary-container">
             <!-- Payment Method -->
-            <div class="payment-method"  id="selectedPaymentMethod">
+            <div class="payment-method"  id="selectedPaymentMethods">
                 <h3>Payment Method</h3>
                 <ul>
                     <li>
@@ -215,6 +215,12 @@
                     
                         <span>RazorPay</span>
                         <input type="radio" class="radio-btn" name="payment" value="RazorPay" id="razorpay" onclick="payment(value)" >
+
+                        <span>Wallet</span>
+                        <input <% if(wallet.balance<cart.totalSalesPrice) {%>disabled<%}%>  type="radio" class="radio-btn" name="payment" value="wallet" id="wallet" onclick="payment(value)" >
+
+
+
                     </li>
                 </ul>
             </div>
@@ -279,7 +285,7 @@
                 <hr>
                 <h4>Order Summary</h4>
                 <% if (cart && cart.totalSalesPrice > 0) { %>
-                    <p>Total Price: ₹<%= cart.totalSalesPrice %></p>
+                    <p id="total-amount">Total Price: ₹<%= cart.totalSalesPrice %>  </p>
                 <% } else if (cart && cart.items.length > 0) { %>
                     <% cart.items.forEach((item) => { %>
                         <p><%= item.product.product_name %> - ₹<%= item.product.product_sale_price * item.quantity %></p>
@@ -346,25 +352,28 @@ async function applyCoupen() {
         if (response.ok) {
             const discountAmount = data.amount
             const finalPrice=data.finalPrice
+            const couponCode = data.couponCode
+            console.log('the response couponCode is ',couponCode)
             document.getElementById('total-amount').innerText = `Total Amount: ₹${finalPrice}`;
             document.getElementById('couponMessage').innerText = `Coupon applied! You saved ${discountAmount}.`;
             document.getElementById('coupenOffer').value = data.amount
             applyButton.innerText='remove'
-            document.getElementById('coupen').value = discountAmount
-            applyButton.onclick = () => removeCoupen(discountAmount);
+            // document.getElementById('coupen').value = discountAmount
+            applyButton.onclick = () => removeCoupen(discountAmount,couponCode);
         } else {
             document.getElementById('couponMessage').innerText = data.message;
         }
     } catch (error) {
+        console.log('error found')
         console.log(error.message);
-        window.location.href = '/errorPage';
+        // window.location.href = '/errorPage';
     }
 }
 ///   REMOVE COUPEN ///
 
-async function removeCoupen(price){
+async function removeCoupen(price,couponCode){
 
-    console.log('function is going on',price)
+    console.log('the couponCode is ',couponCode)
     const applyButton = document.querySelector('.coupen_session button');
     const couponField = document.getElementById('coupen');
 
@@ -372,28 +381,32 @@ async function removeCoupen(price){
     applyButton.innerText = 'Apply Coupon';
     applyButton.onclick = applyCoupen;
 
-    const response = await fetch('/returnAmount',{
-        method:'post',
-        headers:{
-            'Content-Type':'application/json'
+    try {
+    const response = await fetch('/returnAmount', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         },
-        body:JSON.stringify({price:price,couponCode:coupon})
-    })
+        body: JSON.stringify({ price: price, couponCode: couponCode })
+    });
 
-    if(response.ok){
-        const data = await  response.json()
-        const returnAmount = data.returnAmount
-        console.log(data.returnAmount)
+    if (response.ok) {
+        const data = await response.json();
+        const returnAmount = data.returnAmount;
+        console.log(returnAmount);
         document.getElementById('totalOffer').innerText = `Total Amount: ₹${returnAmount}`;
-
-    }else{
-
-
+        document.getElementById('total-amount').innerText = `Total Amount: ₹${returnAmount}`
         document.getElementById('couponMessage').innerText = '';
 
+    } else {
+        document.getElementById('couponMessage').innerText = '';
     }
+} catch (error) {
+    console.log(error.message);
+}
 }
 
+   
 ///   RAZORPAY ///
 
 function checkInputs(event) {
@@ -410,7 +423,11 @@ if(!addressId){
 } else if(paymentMethod =='RazorPay') {
     console.log('razorpay portal')
     razor(form)
-} else {
+} else if(paymentMethod == 'wallet'){
+    console.log('wallet is on')
+    wallet(form)
+
+}else {
     
  
 form.submit()
@@ -418,6 +435,34 @@ form.submit()
     
 }
 }
+
+///
+
+async function wallet(form){
+    const totalAmount = document.getElementById('totalOffer').value
+    const response = await fetch('/walletPay',{
+        method:'post',
+        headers:{
+            'content-Type':'application/json'
+        },
+        body:JSON.stringify({totalAmount})
+    })
+
+const data = await response.json();
+
+    if(data.success){
+        console.log('the route is working')
+        form.submit()
+    }
+
+}
+
+
+
+
+
+////
+
 
 function addressSelect(id){
 console.log(id)

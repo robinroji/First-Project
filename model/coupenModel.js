@@ -20,7 +20,7 @@ const CoupenSchema = new mongoose.Schema({
 	},
 	maxDiscountAmount: {
 		type: Number,
-		required: false,
+		default:200
 	},
 	isActive: {
 		type: Boolean,

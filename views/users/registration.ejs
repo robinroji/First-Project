@@ -35,6 +35,11 @@
 </head>
 <body>
 
+    <% if(message){%>
+
+        <div class="alert alert-danger"> <%=message %></div>
+   <% } %>
+
 <div class="container">
     <div class="text-center mb-4">
         <img src="/Important/Armor Edge Logo.webp" alt="Logo" class="img-fluid" style="width: 100px;">
@@ -118,13 +123,18 @@
             isValid = false;
         }
 
-        if (password === "") {
-            document.getElementById("password_error").textContent = "Password is required.";
-            isValid = false;
-        } else if (password.length < 6) {
-            document.getElementById("password_error").textContent = "Password must be at least 6 characters long.";
-            isValid = false;
-        }
+       if (password === "") {
+    document.getElementById("password_error").textContent = "Password is required.";
+    isValid = false;
+} else if (password.length < 6) {
+    document.getElementById("password_error").textContent = "Password must be at least 6 characters long.";
+    isValid = false;
+} else if (/\s/.test(password)) {
+    document.getElementById("password_error").textContent = "Password cannot contain spaces.";
+    isValid = false;
+}
+
+
 
         if(confirm_password ===""|| confirm_password !==password){
             document.getElementById('confirm_password_error').textContent ="Setting the password failed";

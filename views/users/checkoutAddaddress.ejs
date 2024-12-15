@@ -1,34 +1,40 @@
 <%- include("../layouts/user_header.ejs") %>
-<div class="add-address-container">
+<div class="add-address-container" style="background-color: lightgrey;">
     <div class="add-address-header">
         <h2>Add New Address</h2>
     </div>
-    <form class="address-form" action="/checkout_addAddress" method="POST">
+    <form class="address-form" action="/checkout_addAddress" method="POST" onsubmit="return validateForm()">
         <div class="form-group">
             <label for="username">House Name</label>
-            <input type="text" id="username" name="houseName" placeholder="Enter your Housename" required>
+            <input type="text" id="username" name="houseName" placeholder="Enter your Housename" >
+            <small id="houseNameError" class="error-message"></small>
         </div>
         <div class="form-group">
             <label for="address1">Pincode</label>
-            <input type="text" id="address1" name="pinCode" placeholder="Pincode" required>
+            <input type="text" id="address1" name="pinCode" placeholder="Pincode" >
+            <small id="pinCodeError" class="error-message"></small>
         </div>
         <div class="form-group">
             <label for="address2">Post</label>
-            <input type="text" id="address2" name="po" placeholder="post Office nearby" required>
+            <input type="text" id="address2" name="po" placeholder="Post Office nearby" >
+            <small id="postError" class="error-message"></small>
         </div>
         <div class="form-group">
             <label for="mobile">Locality</label>
-            <input type="text" id="mobile" name="location" placeholder="enter Locality" required>
+            <input type="text" id="mobile" name="location" placeholder="Enter Locality" >
+            <small id="localityError" class="error-message"></small>
         </div>
 
         <div class="form-group">
-            <label for="address2">State</label>
-            <input type="text" id="address2" name="state" placeholder="state" required>
+            <label for="state">State</label>
+            <input type="text" id="state" name="state" placeholder="State" >
+            <small id="stateError" class="error-message"></small>
         </div>
 
         <div class="form-group">
-            <label for="address2">Adress</label>
-            <input type="text" id="address2" name="address" placeholder="adress" required>
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Address" >
+            <small id="addressError" class="error-message"></small>
         </div>
         <div class="form-actions">
             <button type="submit" class="save-btn">Save</button>
@@ -75,6 +81,11 @@
         border: 1px solid #ddd;
         border-radius: 5px;
     }
+    .form-group .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+    }
     .form-actions {
         display: flex;
         justify-content: space-between;
@@ -99,6 +110,67 @@
         opacity: 0.9;
     }
 </style>
-l
+
+<script>
+    function validateForm() {
+        let isValid = true;
+
+        // House Name
+        const houseName = document.getElementById("username");
+        if (!houseName.value.trim()) {
+            document.getElementById("houseNameError").innerText = "House name is required.";
+            isValid = false;
+        } else {
+            document.getElementById("houseNameError").innerText = "";
+        }
+
+        // Pincode
+        const pinCode = document.getElementById("address1");
+        if (!/^\d{6}$/.test(pinCode.value.trim())) {
+            document.getElementById("pinCodeError").innerText = "Enter a valid 6-digit pincode.";
+            isValid = false;
+        } else {
+            document.getElementById("pinCodeError").innerText = "";
+        }
+
+        // Post
+        const post = document.getElementById("address2");
+        if (!post.value.trim()) {
+            document.getElementById("postError").innerText = "Post is required.";
+            isValid = false;
+        } else {
+            document.getElementById("postError").innerText = "";
+        }
+
+        // Locality
+        const locality = document.getElementById("mobile");
+        if (!locality.value.trim()) {
+            document.getElementById("localityError").innerText = "Locality is required.";
+            isValid = false;
+        } else {
+            document.getElementById("localityError").innerText = "";
+        }
+
+        // State
+        const state = document.getElementById("state");
+        if (!state.value.trim()) {
+            document.getElementById("stateError").innerText = "State is required.";
+            isValid = false;
+        } else {
+            document.getElementById("stateError").innerText = "";
+        }
+
+        // Address
+        const address = document.getElementById("address");
+        if (!address.value.trim()) {
+            document.getElementById("addressError").innerText = "Address is required.";
+            isValid = false;
+        } else {
+            document.getElementById("addressError").innerText = "";
+        }
+
+        return isValid;
+    }
+</script>
 
 <%- include("../layouts/user_footer.ejs") %>

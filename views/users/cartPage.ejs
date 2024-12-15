@@ -1,4 +1,6 @@
 <%- include("../layouts/user_header.ejs") %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <style>
   body {
@@ -72,6 +74,7 @@
 
   <div class="container">
 
+
     <% if (success_msg.length>0) { %>
       <div class="alert alert-success">
         <%= success_msg %>
@@ -107,13 +110,14 @@
               </div>
             <% }) %>
           <%}else{%>
-            <p> no products added</p>
+          <p><div class="alert alert-success"> Cart is Empty</div>
           <%}  %>
 
 
 
         <%}else{%>
-          <p>  Cart </p>
+          <p><div class="alert alert-success"> Cart is Empty</div>
+          </p>
           <% }  %>
        
       </div>
@@ -131,8 +135,9 @@
 
       <!-- Place Order Form -->
       <form action="/checkOut" method="get">
-          <button type="submit" class="place-order-btn">Place Order</button>
-      </form>
+        <button   type="submit"  id="placeCheckoutbtn"  onclick="placeCheckout(event, <%= userCart.items.length %>)"> Place Order </button>
+    </form>
+    
 
    
       
@@ -167,6 +172,32 @@
     }
   </script> -->
   <script>
+
+
+    // Function for the button for the checkout
+async function placeCheckout(event, cartItemLength) {
+    event.preventDefault();
+    console.log("Button clicked and working");
+    const length = cartItemLength
+    console.log("Cart item length:", length);
+    if (cartItemLength > 0) {
+        // Redirect to checkout
+        window.location.href = '/checkOut';
+    } else {
+        // Show an error message using SweetAlert2
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Your cart is empty. Please add items before proceeding to checkout.'
+        });
+    }
+
+    
+}
+
+
+
+
     // Function to update the quantity of an item
     async function updateQuantity(itemId, change) {
         // Construct the unique quantity element ID
