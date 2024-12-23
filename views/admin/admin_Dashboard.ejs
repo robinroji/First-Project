@@ -204,7 +204,7 @@ document.getElementById('customDateRange').addEventListener('input', async funct
 });
 
 
-const fetchChartData = async (filter, dateRange = {}) => {
+   const fetchChartData = async (filter, dateRange = {}) => {
     let url = `/admin/getChartData?filter=${filter}`;
     
     if (filter === 'custom') {

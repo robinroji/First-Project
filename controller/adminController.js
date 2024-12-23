@@ -521,120 +521,154 @@ console.log('ssssttt',Status);
 //***************  PDF  *********************/
 const pdf = async (req, res) => {
     try {
-        const{sort,filterStartDate,filterEndDate,orderStatus}=req.query
-  let filter = {};
-  if(orderStatus){
-      filter.orderStatus = orderStatus
-  }
-  // Apply the date filter if a specific date is selected
-  if (filterStartDate) {
-    const rangesortStart = moment(filterStartDate).startOf('day').toDate();
-    const rangesortEnd = moment(filterEndDate).endOf('day').toDate();
-    filter.orderDate = { $gte: rangesortStart, $lte: rangesortEnd };
-  } else if (sort === 'day') {
-    const today = moment().startOf('day');
-    const tomorrow = moment().endOf('day');
-    filter.orderDate = { $gte: today.toDate(), $lte: tomorrow.toDate() };
-  } else if (sort === 'week') {
-    const startOfWeek = moment().startOf('isoWeek');
-    const endOfWeek = moment().endOf('isoWeek');
-    filter.orderDate = { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() };
-  } else if (sort === 'month') {
-    const startOfMonth = moment().startOf('month');
-    const endOfMonth = moment().endOf('month');
-    filter.orderDate = { $gte: startOfMonth.toDate(), $lte: endOfMonth.toDate() };
+        const { sort, filterStartDate, filterEndDate, orderStatus } = req.query;
+        let filter = {};
 
-  }
-
-  console.log('pdf filter ',filter)
-      const salesData = await Order.find(filter).sort({ orderDate: -1 }); // Sort orders by latest first
-  
-      console.log('pdf salesData',salesData)
-      let totalOrders = salesData.length;
-      let totalDiscount = salesData.reduce((sum, order) => sum + (order.couponDiscount || 0), 0);
-      let totalPrice = salesData.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-  
-      const doc = new PDFDocument({ margin: 30 });
-      const filename = `sales_report_${Date.now()}.pdf`;
-  
-      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-      res.setHeader('Content-Type', 'application/pdf');
-  
-      doc.pipe(res);
-  
-      // Title
-      doc.fontSize(18).text('Sales Report', { align: 'center' }).moveDown(1);
-  
-      // Table Headers
-      const headers = ['No', 'Order ID', 'Amount', 'Discount', 'Status', 'Method', 'Date'];
-      const columnWidths = [30, 90, 80, 80, 80, 100, 100];
-      let startY = doc.y + 10;
-      let startX = doc.page.margins.left;
-  
-      doc.fontSize(10).fillColor('black').font('Helvetica-Bold');
-      headers.forEach((header, i) => {
-        doc.text(header, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
-          width: columnWidths[i],
-          align: 'center',
-        });
-      });
-  
-      // Line below headers
-      doc
-        .moveTo(startX, startY + 12)
-        .lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY + 12)
-        .stroke();
-  
-      // Table Rows
-      doc.font('Helvetica').fontSize(9);
-      startY += 15;
-  
-      salesData.forEach((item, index) => {
-        if (startY > doc.page.height - 100) {
-          return;
+        // Apply order status filter
+        if (orderStatus) {
+            filter.orderStatus = orderStatus;
         }
-  
-        const customOrderID =item.customOrderId;
-        const rowData = [
-          index + 1,
-          customOrderID,
-          `${item.totalAmount.toFixed(2)}`,
-          `${item.couponDiscount.toFixed(2)}`,
-          item.paymentStatus,
-          item.paymentMethod,
-          new Date(item.orderDate).toLocaleDateString('en-US'),
-        ];
-  
-        rowData.forEach((data, i) => {
-          doc.text(data, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
-            width: columnWidths[i],
-            align: 'center',
-          });
+
+        // Apply date filter
+        if (filterStartDate) {
+            const rangeStart = moment(filterStartDate).startOf('day').toDate();
+            const rangeEnd = moment(filterEndDate).endOf('day').toDate();
+            filter.orderDate = { $gte: rangeStart, $lte: rangeEnd };
+        } else if (sort === 'day') {
+            const today = moment().startOf('day');
+            const tomorrow = moment().endOf('day');
+            filter.orderDate = { $gte: today.toDate(), $lte: tomorrow.toDate() };
+        } else if (sort === 'week') {
+            const startOfWeek = moment().startOf('isoWeek');
+            const endOfWeek = moment().endOf('isoWeek');
+            filter.orderDate = { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() };
+        } else if (sort === 'month') {
+            const startOfMonth = moment().startOf('month');
+            const endOfMonth = moment().endOf('month');
+            filter.orderDate = { $gte: startOfMonth.toDate(), $lte: endOfMonth.toDate() };
+        }
+
+        console.log('PDF filter:', filter);
+        const salesData = await Order.find(filter).sort({ orderDate: -1 }); // Sort orders by latest first
+
+        console.log('PDF salesData:', salesData);
+
+        // Sales summary calculations
+        let totalOrders = salesData.length;
+        let totalDiscount = salesData.reduce((sum, order) => sum + (order.couponDiscount || 0), 0);
+        let totalPrice = salesData.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+
+        // Generate date range text
+        let dateRangeText = '';
+        if (filterStartDate && filterEndDate) {
+            dateRangeText = `Date Range: ${new Date(filterStartDate).toLocaleDateString('en-US')} - ${new Date(filterEndDate).toLocaleDateString('en-US')}`;
+        } else if (sort === 'day') {
+            dateRangeText = `Date Range: ${moment().startOf('day').format('MM/DD/YYYY')} - ${moment().endOf('day').format('MM/DD/YYYY')}`;
+        } else if (sort === 'week') {
+            dateRangeText = `Date Range: ${moment().startOf('isoWeek').format('MM/DD/YYYY')} - ${moment().endOf('isoWeek').format('MM/DD/YYYY')}`;
+        } else if (sort === 'month') {
+            dateRangeText = `Date Range: ${moment().startOf('month').format('MM/DD/YYYY')} - ${moment().endOf('month').format('MM/DD/YYYY')}`;
+        }
+
+        const doc = new PDFDocument({ margin: 30 });
+        const filename = `sales_report_${Date.now()}.pdf`;
+
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        res.setHeader('Content-Type', 'application/pdf');
+
+        doc.pipe(res);
+
+        // Title
+        doc.fontSize(18).text('Sales Report', { align: 'center' }).moveDown(1);
+
+        // Add Date Range and Order Status (if applied)
+        if (dateRangeText) {
+            doc.fontSize(12).font('Helvetica').text(dateRangeText, { align: 'center' }).moveDown(0.5);
+        }
+        if (orderStatus) {
+            doc.fontSize(12).font('Helvetica').text(`Order Status: ${orderStatus}`, { align: 'center' }).moveDown(1);
+        }
+
+        // Table Headers
+        const headers = ['No', 'Order ID', 'Amount', 'Discount', 'Payment Status', 'Method', 'Date'];
+        const columnWidths = [30, 90, 80, 80, 80, 100, 100];
+        let startY = doc.y + 10;
+        let startX = doc.page.margins.left;
+
+        doc.fontSize(10).fillColor('black').font('Helvetica-Bold');
+        headers.forEach((header, i) => {
+            doc.text(header, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
+                width: columnWidths[i],
+                align: 'center',
+            });
         });
+
+        // Line below headers
+        doc
+            .moveTo(startX, startY + 12)
+            .lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY + 12)
+            .stroke();
+
+        // Table Rows
+        doc.font('Helvetica').fontSize(9);
+        startY += 15;
+
+        salesData.forEach((item, index) => {
+            if (startY > doc.page.height - 100) {
+                doc.addPage(); // Add a new page if content exceeds page height
+                startY = doc.page.margins.top;
+            }
+
+            const customOrderID = item.customOrderId;
+            const rowData = [
+                index + 1,
+                customOrderID,
+                `${item.totalAmount.toFixed(2)}`,
+                `${item.couponDiscount.toFixed(2)}`,
+                item.paymentStatus,
+                item.paymentMethod,
+                new Date(item.orderDate).toLocaleDateString('en-US'),
+            ];
+
+            rowData.forEach((data, i) => {
+                doc.text(data, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
+                    width: columnWidths[i],
+                    align: 'center',
+                });
+            });
+            startY += 12;
+        });
+
+        // Sales Summary Section
+        startY += 20;
+        doc.fontSize(12).font('Helvetica-Bold').text('Sales Summary', startX, startY);
+        startY += 15;
+        doc.fontSize(10).font('Helvetica');
+
+        if (dateRangeText) {
+            doc.text(dateRangeText, startX, startY);
+            startY += 12;
+        }
+
+        if (orderStatus) {
+            doc.text(`Order Status: ${orderStatus}`, startX, startY);
+            startY += 12;
+        }
+
+        doc.text(`Total Orders: ${totalOrders}`, startX, startY);
         startY += 12;
-      });
-  
-      // Sales Summary Section
-      startY += 20;
-      doc.fontSize(12).font('Helvetica-Bold').text('Sales Summary', startX, startY);
-      startY += 15;
-      doc.fontSize(10).font('Helvetica');
-  
-      doc.text(`Total Orders: ${totalOrders}`, startX, startY);
-      startY += 12;
-      doc.text(`Total Discounts: ${totalDiscount.toFixed(2)}`, startX, startY);
-      startY += 12;
-      doc.text(`Total Price: ${totalPrice.toFixed(2)}`, startX, startY);
-  
-      // Finalize PDF
-      doc.end();
-      console.log('Generating the PDF report');
+        doc.text(`Total Discounts: ${totalDiscount.toFixed(2)}`, startX, startY);
+        startY += 12;
+        doc.text(`Total Price: ${totalPrice.toFixed(2)}`, startX, startY);
+
+        // Finalize PDF
+        doc.end();
+        console.log('Generating the PDF report');
     } catch (error) {
-      console.log('Error generating PDF:', error.message);
-      res.redirect('/errorPage');
+        console.log('Error generating PDF:', error.message);
+        res.redirect('/errorPage');
     }
-  };
-  
+};
 
 
 
