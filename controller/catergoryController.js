@@ -203,7 +203,7 @@ const createOffer = async (req, res) => {
 
             const productUpdate = await  Product.findOneAndUpdate(
                 { product_category: categoryId ,_id:item._id},
-                { product_sale_price: item.product_sale_price - newSalePrice ,offerValue:newSalePrice},
+                { product_sale_price:Math.round(item.product_sale_price - newSalePrice) ,offerValue:newSalePrice},
                 { new: true } 
                )        
                
@@ -280,7 +280,7 @@ const createOffer = async (req, res) => {
                 const productUpdate = await Product.findOneAndUpdate(
                     { product_category: category_id,_id:item.id},
                     {
-                        product_sale_price: item.product_sale_price + item.offerValue,
+                        product_sale_price:Math.round(item.product_sale_price + item.offerValue),
                         offerValue: 0 // Ensure this matches the schema
                     },
                     { new: true } // Return the updated document

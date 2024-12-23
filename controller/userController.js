@@ -370,7 +370,7 @@ const get_resend_otp = async(req,res)=>{
 
 const logout = async (req,res)=>{
     try {
-        req.session.destroy();
+        req.session.destroy()
         res.redirect('/login')
     } catch (error) {
         console.log(error.message);
@@ -758,7 +758,7 @@ loadCheckout = async (req, res) => {
     if(validCart.items.length<=0){
         console.log('no cart items found ')
         
-        return res.redirect('/errorPage')
+        return res.redirect('/cart_page')
     }
     
     
@@ -1000,7 +1000,8 @@ const placeOrder = async (req, res) => {
             onlinePaymentId:null,
             paymentMethod:paymentMethod || 'COD',
             paymentStatus: ['RazorPay', 'wallet'].includes(paymentMethod) ? 'completed' : 'pending',
-            shippingAddress:addressId
+            shippingAddress:addressId,
+            customOrderId:Math.floor(100000 + Math.random() * 900000),
               
         }).save();
         
@@ -1199,7 +1200,7 @@ if (existingUser) {
 const loadWishList = async (req, res) => {
     try {
         const products = await WishList.find({ user: req.session.user_id }).populate('product');
-        console.log('the products is ',products)
+        // console.log('the products is ',products)
        
         res.render('wishList', { product: products});
     } catch (error) {
@@ -1213,21 +1214,28 @@ const loadWishList = async (req, res) => {
 
 
 const wishlist = async(req,res)=>{
+    console.log('the responce productId is',req.body.productId)
+
+const existing = await WishList.findOne({product:req.body.productId})
+
     try {
+        
+    if(existing){
+        const product = await WishList.find({ user: req.session.user_id }).populate('product');
+        console.log('item alredy exist in the wishlist')
+         const sendStatus = true
+          return res.json({sendStatus})
+
+        // return res.redirect('/wishList');
+    
+    }
         const list = new WishList({
             user:req.session.user_id,
-            product:req.params.id
+            product:req.body.productId
         })
-const existing = await WishList.findOne({product:req.params.id})
-    
-if(existing){
-console.log('item alredy exist in the wishlist')
-return res.redirect('/shop');
-
-}
         await list.save()
         console.log('saved')
-        res.redirect('/wishList')
+        res.json({success:true})
         
     } catch (error) {
         console.log(error.message)
@@ -1392,15 +1400,29 @@ const applyCoupen = async(req,res)=>{
 
             if(discountAmount>coupon.maxDiscountAmount){
                 console.log('limit crossed ')
+
+                discountAmount = coupon.maxDiscountAmount
+                finalPrice = Math.round(cart.totalSalesPrice-discountAmount)
+                console.log('am',discountAmount)
+    
+                cart.totalSalesPrice = finalPrice;
+    
+                coupon.usedBy=req.session.user_id
+             await coupon.save()
+            await cart.save();
+            
+            }else{
+
+                finalPrice = Math.round(cart.totalSalesPrice-discountAmount)
+                console.log('am',discountAmount)
+    
+                cart.totalSalesPrice = finalPrice;
+    
+                coupon.usedBy=req.session.user_id
+             await coupon.save()
+            await cart.save();
             }
-            finalPrice = Math.round(cart.totalSalesPrice-discountAmount)
-            console.log('am',discountAmount)
-
-            cart.totalSalesPrice = finalPrice;
-
-            coupon.usedBy=req.session.user_id
-         await coupon.save()
-        await cart.save();
+           
         // console.log('check',coupon)
         // console.log(req.session.user_id)
             console.log('dddd',discountAmount)
@@ -1958,8 +1980,22 @@ const downloadInvoice = async (req, res) => {
         // Order Totals Section
         doc.moveDown(1);
         doc.moveTo(30, rowTop + 10).lineTo(570, rowTop + 10).stroke();
-        doc.text(`Delivery Charges: Free`, 400, rowTop + 50, { align: 'right' });
-        doc.fontSize(14).text(`Total: ${order.totalAmount.toFixed(2)}`, 400, rowTop + 70, {
+
+        
+        // Delivery Charges and Coupon Discount
+        const deliveryCharges = 'Free' ;  
+        const couponDiscount = order.couponDiscount || 0; 
+
+        doc.fontSize(12).text(`Delivery Charges: ${deliveryCharges}`, 400, rowTop + 20, { align: 'right' });
+
+        // Display coupon discount if applied
+        if (couponDiscount > 0) {
+            doc.fontSize(12).text(`Coupon Discount: -${couponDiscount.toFixed(2)}`, 400, rowTop + 40, { align: 'right' });
+        }
+
+        // Final Total Amount
+        const totalAfterDiscount = (order.totalAmount - couponDiscount).toFixed(2);
+        doc.fontSize(14).text(`Total: ${totalAfterDiscount}`, 400, rowTop + 70, {
             align: 'right',
             bold: true,
         });
@@ -1976,6 +2012,7 @@ const downloadInvoice = async (req, res) => {
         res.redirect('/errorPage');
     }
 };
+
 
 ///****** walletPay */
 

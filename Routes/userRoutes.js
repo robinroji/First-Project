@@ -142,7 +142,7 @@ user_route.get('/downloadInvoice/:id',auth.isLogin,userController.downloadInvoic
 
 //***** WishList *********/
 user_route.get('/wishList',auth.isLogin,userController.loadWishList)
-user_route.get('/move_to_wishList/:id',auth.isLogin,userController.wishlist)
+user_route.post('/move_to_wishList',auth.isLogin,userController.wishlist)
 user_route.post('/remove_product/:id',auth.isLogin,userController.remove_product)
 user_route.get('/add_toCart/:id',auth.isLogin,userController.add_toCart)
 

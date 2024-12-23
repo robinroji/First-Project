@@ -3,43 +3,128 @@
 <div class="container">
     <h2>Edit Address</h2>
 
-    <form action="/edit_address" method="POST">
+    <form action="/edit_address" method="POST" id="editAddressForm">
         <!-- Hidden input to pass the address ID -->
         <input type="hidden" name="addressId" value="<%= address._id %>">
 
         <!-- House Name -->
         <div class="form-group">
             <label for="houseName">House Name:</label>
-            <input type="text" id="houseName" name="houseName" value="<%= address.houseName %>" class="form-control" required>
+            <input type="text" id="houseName" name="houseName" value="<%= address.houseName %>" class="form-control" 
+                   required minlength="3" maxlength="50">
+            <small class="text-danger" id="houseNameError"></small>
         </div>
 
         <!-- Pin Code -->
         <div class="form-group">
             <label for="pinCode">Pin Code:</label>
-            <input type="text" id="pinCode" name="pinCode" value="<%= address.pinCode %>" class="form-control" required>
+            <input type="text" id="pinCode" name="pinCode" value="<%= address.pinCode %>" class="form-control" 
+                   required pattern="^[0-9]{6}$">
+            <small class="text-danger" id="pinCodeError"></small>
         </div>
 
         <!-- PO -->
         <div class="form-group">
             <label for="po">PO:</label>
-            <input type="text" id="po" name="po" value="<%= address.po %>" class="form-control" required>
+            <input type="text" id="po" name="po" value="<%= address.po %>" class="form-control" 
+                   required minlength="2" maxlength="50">
+            <small class="text-danger" id="poError"></small>
         </div>
 
         <!-- Location -->
         <div class="form-group">
             <label for="location">Location:</label>
-            <input type="text" id="location" name="location" value="<%= address.location %>" class="form-control" required>
+            <input type="text" id="location" name="location" value="<%= address.location %>" class="form-control" 
+                   required minlength="3" maxlength="100">
+            <small class="text-danger" id="locationError"></small>
         </div>
 
         <!-- State -->
         <div class="form-group">
             <label for="state">State:</label>
-            <input type="text" id="state" name="state" value="<%= address.state %>" class="form-control" required>
+            <input type="text" id="state" name="state" value="<%= address.state %>" class="form-control" 
+                   required minlength="2" maxlength="50">
+            <small class="text-danger" id="stateError"></small>
         </div>
 
         <!-- Submit Button -->
         <button type="submit" class="btn btn-primary">Update Address</button>
     </form>
 </div>
+
+<script>
+    const form = document.getElementById('editAddressForm');
+
+    // Real-time validation on the Pin Code field
+    document.getElementById('pinCode').addEventListener('input', function () {
+        const pinCode = this.value;
+        const pinCodeError = document.getElementById('pinCodeError');
+        const pinCodeRegex = /^[0-9]{6}$/;
+
+        if (!pinCodeRegex.test(pinCode)) {
+            pinCodeError.textContent = 'Pin Code must be exactly 6 digits.';
+        } else {
+            pinCodeError.textContent = '';
+        }
+    });
+
+    form.addEventListener('submit', function (e) {
+        let valid = true;
+
+        // Validate House Name
+        const houseName = document.getElementById('houseName');
+        const houseNameError = document.getElementById('houseNameError');
+        if (houseName.value.trim().length < 3 || houseName.value.trim().length > 50) {
+            houseNameError.textContent = 'House Name must be between 3 and 50 characters.';
+            valid = false;
+        } else {
+            houseNameError.textContent = '';
+        }
+
+        // Validate Pin Code
+        const pinCode = document.getElementById('pinCode');
+        const pinCodeError = document.getElementById('pinCodeError');
+        if (!/^[0-9]{6}$/.test(pinCode.value)) {
+            pinCodeError.textContent = 'Pin Code must be exactly 6 digits.';
+            valid = false;
+        } else {
+            pinCodeError.textContent = '';
+        }
+
+        // Validate PO
+        const po = document.getElementById('po');
+        const poError = document.getElementById('poError');
+        if (po.value.trim().length < 2 || po.value.trim().length > 50) {
+            poError.textContent = 'PO must be between 2 and 50 characters.';
+            valid = false;
+        } else {
+            poError.textContent = '';
+        }
+
+        // Validate Location
+        const location = document.getElementById('location');
+        const locationError = document.getElementById('locationError');
+        if (location.value.trim().length < 3 || location.value.trim().length > 100) {
+            locationError.textContent = 'Location must be between 3 and 100 characters.';
+            valid = false;
+        } else {
+            locationError.textContent = '';
+        }
+
+        // Validate State
+        const state = document.getElementById('state');
+        const stateError = document.getElementById('stateError');
+        if (state.value.trim().length < 2 || state.value.trim().length > 50) {
+            stateError.textContent = 'State must be between 2 and 50 characters.';
+            valid = false;
+        } else {
+            stateError.textContent = '';
+        }
+
+        if (!valid) {
+            e.preventDefault(); // Prevent form submission if validation fails
+        }
+    });
+</script>
 
 <%- include("../layouts/user_footer.ejs") %>

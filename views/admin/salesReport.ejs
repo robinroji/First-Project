@@ -15,59 +15,95 @@
     <!-- Sorting Options -->
     <div class="d-flex justify-content-between mb-4">
       <div>
-        <button class="btn btn-primary sort-btn" data-sort="day">Day</button>
-        <button class="btn btn-primary sort-btn" data-sort="week">Week</button>
-        <button class="btn btn-primary sort-btn" data-sort="month">Month</button>
+        <button class="btn btn-primary sort-btn" data-sort="day" >Day</button>
+        <button class="btn btn-primary sort-btn" data-sort="week" >Week</button>
+        <button class="btn btn-primary sort-btn" data-sort="month" >Month</button>
       </div>
 
+
       <div>
+        <div>
+          <span style="margin-right: 90px;">Date From</span>
+          <span>Date To</span>
+          
+
+        </div>
         <input
           type="date"
-          id="filter-date"
+          id="filterStartdate"
           class="form-control"
           style="width: auto; display: inline-block;"
-        />
+        >
+
+        
+        <input
+          type="date"
+          id="filterEnddate"
+          class="form-control"
+          style="width: auto; display: inline-block;"
+        >
         <button id="filter-btn" class="btn btn-secondary">Filter</button>
       </div>
     </div>
-    
-    <div style="width: 300px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif; margin: 20px 0;">
-    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+
+    <!-- Summary Section -->
+    <div class="summary-card" style="width: 300px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif; margin: 20px 0;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left;">
         <tr>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">Total Sale</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;"><%=length %></td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;"><%= length %></td>
         </tr>
         <tr>
           <td style="padding: 8px; border-bottom: 1px solid #ddd;">Total Order Amount</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;"><%=sum %></td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;"><%= sum %></td>
         </tr>
         <tr>
           <td style="padding: 8px;">Total Discount</td>
-          <td style="padding: 8px; text-align: right;"><%=totalOffer %></td>
+          <td style="padding: 8px; text-align: right;"><%= totalOffer %></td>
         </tr>
       </table>
     </div>
 
+   <div class="mb-4">
+  <label for="format" class="form-label">Format:</label>
+  <select id="format" class="form-select">
+    <option value="pdf">PDF</option>
+    <option value="xlsx">Excel</option>
+  </select>
+  <button id="btnDownload" class="btn btn-dark mt-2">Download Report</button>
 
-    <div class="mb-4">
-      <label for="format" class="form-label">Format:</label>
-      <select id="format" class="form-select">
-          <option value="pdf">PDF</option>
-          <option value="xlsx">Excel</option>
-      </select>
-      <button id="btnDownload" class="btn btn-dark mt-2">Download Report</button>
+  <!-- Dropdown for order status -->
+  <div class="dropdown mt-3">
+    <button
+      class="btn btn-secondary dropdown-toggle"
+      type="button"
+      id="orderStatusDropdown"
+      data-bs-toggle="dropdown"
+      aria-expanded="false">
+      Order Status
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="orderStatusDropdown">
+      <li><a class="dropdown-item" href="#" data-status="Pending">Pending</a></li>
+      <li><a class="dropdown-item" href="#" data-status="confirmed">confirmed</a></li>
+      <li><a class="dropdown-item" href="#" data-status="Delivered">Delivered</a></li>
+      <li><a class="dropdown-item" href="#" data-status="Cancelled">cancelled</a></li>
+    </ul>
   </div>
+</div>
+
     
 
     <!-- Sales Report Table -->
     <div class="table-responsive">
-      <table class="table table-bordered table">
+
+      <div>   <p id="filterDate"> <h4> <%=filterDate %> </h4>  </p> <br> </div>
+      <table class="table table-bordered">
         <thead>
           <tr>
             <th>NO</th>
             <th>OrderId</th>
             <th>Order Amount</th>
-            <th>Coupen Offer</th>
+            <th>Coupon Offer</th> 
             <th>Status</th>
             <th>Payment Method</th>
             <th>Date</th>
@@ -75,58 +111,105 @@
         </thead>
         <tbody id="sales-report">
           <% salesData.forEach((item, index) => { %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td><strong> <%= item._id %> </strong></td>
-            <td><%= item.totalAmount %></td>
-            <td><%= item.couponDiscount %></td>
-            <td><%= item.paymentStatus %></td>
-            <td><%= item.paymentMethod %></td>
-            <td><%= new Date(item.orderDate).toLocaleDateString('en-US') %></td>
-          </tr>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><strong><%= item.customOrderId %></strong></td>
+              <td><%= item.totalAmount %></td>
+              <td><%= item.couponDiscount %></td>
+              <td><%= item.orderStatus %></td>
+              <td><%= item.paymentMethod %></td>
+              <td><%= new Date(item.orderDate).toLocaleDateString('en-US') %></td>
+            </tr>
           <% }); %>
         </tbody>
       </table>
     </div>
+    <ul class="pagination justify-content-center">
+    
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+          <a class="page-link" 
+          href="?page=<%= i %>&limit=<%= limit %><%= sort ? '&sort=' + sort : '' %><%= filterStartDate ? '&filterStartDate=' + filterStartDate : '' %><%= filterEndDate ? '&filterEndDate=' + filterEndDate : '' %><%= orderStatus ? '&orderStatus=' + orderStatus : '' %>">
+          <%= i %>
+       </a>
+              </a>
+          </li>
+      <% } %>
+
+     
+    </ul>
   </div>
- 
+  <script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+  defer></script>
+
   <script>
-
-  document.getElementById('btnDownload').addEventListener('click', () => {
-  const format = document.getElementById('format').value;
-  if (format === 'pdf') {
-    window.location.href = '/admin/sales-report/download/pdf';
-  } else if (format === 'xlsx') {
-    window.location.href = '/admin/sales-report/download/excel';
-  }
-  });
-
-
-
+   
 
     document.addEventListener("DOMContentLoaded", function () {
       // Sorting Buttons
       const sortButtons = document.querySelectorAll(".sort-btn");
       const filterBtn = document.getElementById("filter-btn");
-      const filterDateInput = document.getElementById("filter-date");
-      const btnDownload = document.getElementById('btnDownload');
-      const formatSelect = document.getElementById('format');
-            
+      const filterStartInput = document.getElementById("filterStartdate")
+      const filterEndInput = document.getElementById("filterEnddate")
+      const sortByStatus = document .querySelectorAll('.dropdown-item')
 
+      console.log(filterStartInput.innerHTML)
+      console.log(filterEndInput.innerText)
+let selectedSort = ''
       sortButtons.forEach(button => {
         button.addEventListener("click", () => {
           const sortType = button.getAttribute("data-sort");
-          window.location.href = `/admin/sales-report?sort=${sortType}`;
-        });
-      });
+          if(sortType=='day'){
+            console.log('daily selected')
+            selectedSort = sortType
+            window.location.href = `/admin/sales-report?sort=${sortType}&&filterDate=Orders+of+the+Day`;
+          }else if(sortType == 'week'){
+            window.location.href = `/admin/sales-report?sort=${sortType}&&filterDate=Orders+of+the+Week`;
+            selectedSort = sortType
+          }else if(sortType=='month'){
+            window.location.href = `/admin/sales-report?sort=${sortType}&&filterDate=Orders+of+the+Month`;
+            selectedSort = sortType
+          }
+
+        });   
+
+      })
+
+// Add event listeners to each item
+sortByStatus.forEach(button => {
+  button.addEventListener('click', () => {
+    const status = button.getAttribute('data-status');
+    console.log(status);
+    window.location.href =`/admin/sales-report?orderStatus=${status}&sort=${selectedSort}&filterStartDate=<%=filterStartDate%>&filterEndDate=<%=filterEndDate%>`
+  });
+});
 
       // Filter by Date
       filterBtn.addEventListener("click", () => {
-        const filterDate = filterDateInput.value;
-        if (filterDate) {
-          window.location.href = `/admin/sales-report?filterDate=${filterDate}`;
+        const filterStartDate = filterStartInput.value;
+        const filterEndDate = filterEndInput.value;
+
+        console.log('check 3',filterStartDate)
+        console.log('check 4',filterEndDate)
+        
+        if (filterStartDate && filterEndDate) {
+          window.location.href = `/admin/sales-report?filterStartDate=${filterStartDate}&filterEndDate=${filterEndDate}&filterDate=Orders+from+${filterStartDate}+to+${filterEndDate}`;
+        } else {
+          alert('Please select both start and end dates.');
         }
       });
+      
+      document.getElementById('btnDownload').addEventListener('click', () => {
+      const format = document.getElementById('format').value;
+      if (format === 'pdf') {
+        window.location.href = '/admin/sales-report/download/pdf?sort=<%=sort%>&filterStartDate=<%=filterStartDate%>&filterEndDate=<%=filterEndDate%>&orderStatus=<%= orderStatus%>';
+      } else if (format === 'xlsx') {
+        window.location.href = '/admin/sales-report/download/excel?sort=<%=sort%>&filterStartDate=<%=filterStartDate%>&filterEndDate=<%=filterEndDate%>&orderStatus=<%= orderStatus%>';
+      }
+    });
+      
     });
   </script>
 </body>

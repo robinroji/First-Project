@@ -1,8 +1,12 @@
 <%- include("../layouts/user_header.ejs") %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
  <!-- Product Grid -->
- <div class="col-lg-9 col-md-8 col-12 mt-4" >
-    <div class="row product-grid-4">
+  <div style="background-color:thistle;">
+
+ <div class="col-lg-9 col-md-8 col-12 pt-4  ms-5 me-4 pe-4" >
+    <div class="row product-grid-4 mx-5">
         <% product.forEach((product, index) => { %>
         <div class="col-lg-4 col-md-4 col-12 col-sm-6 product-item" data-category="<%= product.product_category %>">
             <div class="product-cart-wrap mb-30">
@@ -15,9 +19,9 @@
                         </a>
                     </div>
                     <div class="product-action-1">
-                        <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-eye"></i></a>
-                        <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/move_to_wishList/<%=product._id %>"><i class="fi-rs-heart"></i></a>
-                        <a aria-label="Compare" class="action-btn hover-up" href="/"><i class="fi-rs-shuffle"></i></a>
+                        <!-- <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-eye"></i></a> -->
+                        <a aria-label="Add To Wishlist" class="action-btn hover-up" onclick="addtoWishlist(event,'<%=product._id%>')"><i class="fi-rs-heart"></i></a>
+                        <!-- <a aria-label="Compare" class="action-btn hover-up" href="/"><i class="fi-rs-shuffle"></i></a> -->
                     </div>
                 </div>
                 <div class="product-content-wrap">
@@ -44,6 +48,42 @@
         <% }) %>
     </div>
 </div>
+</div>
+
+<script>  
+async function addtoWishlist(event,productId) {
+    event.preventDefault();
+    console.log('fetch working',productId)
+    const responce = await fetch('/move_to_wishList',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+        },
+        body:JSON.stringify({productId}),
+        
+    })
+
+    const data = await  responce.json();
+
+    const trueStatus = data.sendStatus
+    console.log(trueStatus)
+    if(trueStatus==true){
+        Swal.fire({
+            title: '',       
+            text: 'Product alredy exist',      
+            icon: '',           
+            confirmButtonText: 'OK'   
+          });
+    }
+
+    if(data.success){
+        return window.location.href='/wishList'
+    }
+
+    
+}
+</script>
+
 
 <%- include("../layouts/user_footer.ejs") %>
 

@@ -116,7 +116,7 @@ const orderModel = Schema({
     orderStatus:{
         type:String,
         required:false,
-        enum:['pending','confirmed','shipped','Delivered','cancelled','returned'],
+        enum:['pending','confirmed','shipped','delivered','cancelled','returned'],
         default:'pending'
     },
     paymentMethod:{
@@ -136,6 +136,10 @@ const orderModel = Schema({
         ref: 'Address',
         required: true,
       },
+    customOrderId:{
+        type:Number,
+        required:false,
+    }
     },
     { timestamps: true } // This should be placed as an option within the schema definition
   );

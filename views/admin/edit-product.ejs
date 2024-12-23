@@ -81,12 +81,9 @@
 
                         <div class="col-md-4 mb-4">
                             <div class="card">
-                                <img src="<%= item.imageUrl %>" class="card-img-top" alt="<%= item.name %>">
                                 <div class="card-body">
                                     <h5 class="card-title"><%= item.name %></h5>
                                     <p class="card-text"><strong>Offer percentage:<%= item.discountPercentage%></strong></p>
-                                    <p class="card-text"><strong>Offer from :<%= item.startDate %></strong></p>
-                                    <p class="card-text"><strong>Offer Expires :<%= item.expiryData %></strong></p>
                                     <p class="card-text"><strong>Description:<%= item.description %></strong></p>
 
                                     <button class="offer-btn" <% if(product.offerValue>0) {%> disabled <% } %> onclick="productofferButton(event,'<%= item._id %>','<%= product._id%>')">Apply Offer </button>

@@ -141,9 +141,10 @@
 
     </style>
 </head>
-
+<div style="background-color: lightcyan;">
 <body>
-    <div class="checkout-container">
+
+    <div class="checkout-container" style="background-color: lightcyan;" >
         <!-- Left Section (Checkout Details) -->
         <div class="checkout-details">
             <h2>CHECKOUT</h2>
@@ -160,7 +161,7 @@
                     <input type="hidden" name="coupenOffer" value="" id="coupenOffer">
                 </form>
                 <% cart.items.forEach((item) => { %>
-                    <div class="product-card">
+                    <div class="product-card" style="background-color:lightblue">
                         <!-- Product Image -->
                         <div class="product-image">
                             <img src="/newfile/<%= item.product.product_image[0] %>" alt="Product Image">
@@ -178,7 +179,7 @@
             </div>
 
             <!-- Delivery Address -->
-            <div class="delivery-address">
+            <div class="delivery-address" style="background-color:lightgray;">
                 <h3>Delivery Address</h3>
                 <br>
                 <div>
@@ -211,19 +212,23 @@
                 <ul>
                     <li>
                         <span>Cash On Delivery</span>
-                        <input <% if(onlyItems.totalSalesPrice>1000) {%>disabled<%}%>  type="radio" class="radio-btn" name="payment" value="COD" id="cod" onclick="payment(value)" >
-                    
+                        <input <% if(onlyItems.totalSalesPrice>1000) {%>  onmouseover="reason()" onmouseleave ='clearReason()'
+                        disabled   <%}%>  type="radio" class="radio-btn" name="payment" value="COD" id="cod" onclick="payment(value)" >
+                        <br>
+
                         <span>RazorPay</span>
                         <input type="radio" class="radio-btn" name="payment" value="RazorPay" id="razorpay" onclick="payment(value)" >
 
-                        <span>Wallet</span>
-                        <input <% if(wallet.balance<cart.totalSalesPrice) {%>disabled<%}%>  type="radio" class="radio-btn" name="payment" value="wallet" id="wallet" onclick="payment(value)" >
+                        <span  >Wallet</span>
+                        <input <% if(wallet.balance<cart.totalSalesPrice) {%> onmouseover="walletReason()" onmouseleave="walletClear()" disabled<%}%>  type="radio" class="radio-btn" name="payment" value="wallet" id="wallet" onclick="payment(value)" >
 
 
 
                     </li>
                 </ul>
             </div>
+
+            <span id="typeMessage"></span>
 
             <div class="coupen_session"> 
                 <input type="text" id="coupen" placeholder="Enter the coupen">
@@ -261,6 +266,8 @@
                             </tr>
                         <% }) %>
                     </tbody>   
+                    <br>
+                    <p> *max amount per coupen is 200</p>
                 </table>
                 
                 
@@ -274,16 +281,11 @@
             <div class="order-summary">
                 <h4>Order Summary</h4>
                 <% if (cart && cart.totalRegularPrice > 0) { %>
-                    <p>Total Price: ₹<%= cart.totalRegularPrice %></p>
+                    <p>Sales Price: ₹<%= cart.totalRegularPrice %></p>
                 <% } else { %>
                     <p>No items in the cart.</p>
                 <% } %>
-            </div>
-            
 
-
-                <hr>
-                <h4>Order Summary</h4>
                 <% if (cart && cart.totalSalesPrice > 0) { %>
                     <p id="total-amount">Total Price: ₹<%= cart.totalSalesPrice %>  </p>
                 <% } else if (cart && cart.items.length > 0) { %>
@@ -293,12 +295,23 @@
                 <% } else { %>
                     <p>No items in the cart.</p>
                 <% } %>
-                                <input  type="hidden" value="<%= onlyItems.totalSalesPrice %>" id="totalOffer" >
+
+                <input  type="hidden" value="<%= onlyItems.totalSalesPrice %>" id="totalOffer" >
+                
                 <button type="submit" onclick="checkInputs(event)" class="btn btn-primary btn-lg w-100" id="placeOrder" >Place Order</button>
            
             </div>
+            
+
+
+                <!-- <hr>
+                <h4>Order Summary</h4> -->
+                
+                              
+            </div>
         </div>
     </div>
+</div>
 </body>
 <!-- 
 <script>
@@ -327,6 +340,39 @@
 </script> -->
 
 <script>
+// //
+
+async function reason() {
+    console.log('yes working')
+    const tt ='COD not available for above 1000 rupees'
+    document.getElementById('typeMessage').innerText =tt
+    
+}
+
+
+async function clearReason() {
+    console.log('yes working')
+    const tt =''
+    document.getElementById('typeMessage').innerText =tt
+    
+}
+
+
+async function walletReason() {
+    console.log('yes working')
+    const tt ='No enough Amount in wallet Pay'
+    document.getElementById('typeMessage').innerText =tt
+    
+}
+
+
+async function walletClear() {
+    console.log('yes working')
+    const tt =''
+    document.getElementById('typeMessage').innerText =tt
+    
+}
+
 
 
 /////  ADD COUPEN ////
@@ -353,6 +399,7 @@ async function applyCoupen() {
             const discountAmount = data.amount
             const finalPrice=data.finalPrice
             const couponCode = data.couponCode
+            document.getElementById('totalOffer').value = data.finalPrice
             console.log('the response couponCode is ',couponCode)
             document.getElementById('total-amount').innerText = `Total Amount: ₹${finalPrice}`;
             document.getElementById('couponMessage').innerText = `Coupon applied! You saved ${discountAmount}.`;
@@ -393,6 +440,8 @@ async function removeCoupen(price,couponCode){
     if (response.ok) {
         const data = await response.json();
         const returnAmount = data.returnAmount;
+        document.getElementById('totalOffer').value = data.returnAmount
+
         console.log(returnAmount);
         document.getElementById('totalOffer').innerText = `Total Amount: ₹${returnAmount}`;
         document.getElementById('total-amount').innerText = `Total Amount: ₹${returnAmount}`

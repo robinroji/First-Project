@@ -56,12 +56,26 @@
         color: #fff;
         margin: 20px 0;
     }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .pagination a {
+        color: #fff;
+        background-color: #2b305e;
+        padding: 8px 16px;
+        margin: 0 5px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+    .pagination a.active {
+        background-color: #17a2b8;
+    }
 </style>
 
 <div class="container-fluid table-container">
     <h2>Orders</h2>
-    
-    
 
     <table class="table table-hover mt-3">
         <thead>
@@ -81,28 +95,19 @@
                 <% order.items.forEach((item, itemIndex) => { %>
                     <tr>
                         <% if (itemIndex === 0) { %>
-                            <!-- First item of the order: show order details -->
                             <td rowspan="<%= order.items.length %>"><%= index + 1 %></td>
                             <td rowspan="<%= order.items.length %>"><%= order.user.firstname %></td>
                         <% } %>
 
-                        <td>
-                            <img src="/newfile/<%= item.images[0] %>" alt="Product Image">
-                        </td>
-
+                        <td><img src="/newfile/<%= item.images[0] %>" alt="Product Image"></td>
                         <td><%= item.productName %></td>
-
                         <td><%= item.quantity %></td>
-
                         <td><%= item.price %></td>
 
                         <% if (itemIndex === 0) { %>
-                            <!-- Only show payment and actions once for the entire order -->
                             <td rowspan="<%= order.items.length %>"><%= order.paymentMethod %></td>
                             <td rowspan="<%= order.items.length %>">
-                                <a href="/admin/edit_order/<%= order._id %>", id="edit" class="btn"><i class="fas fa-edit"></i></a>
-                                <span> </span>
-                                <!-- <a href="/delete-order/<%= order._id %>" class="btn"><i class="fas fa-trash"></i></a> -->
+                                <a href="/admin/edit_order/<%= order._id %>" class="btn"><i class="fas fa-edit"></i></a>
                             </td>
                         <% } %>
                     </tr>
@@ -110,26 +115,21 @@
             <% }) %>
         </tbody>
     </table>
+
+    <!-- Pagination Links -->
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %>">Previous</a>
+        <% } %>
+        
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %>">Next</a>
+        <% } %>
+    </div>
 </div>
-<div class="d-flex justify-content-between align-items-center mt-4">
-    <% if (currentPage > 1) { %>
-        <a href="/admin/orderList?page=<%= currentPage - 1 %>" class="btn btn-info">Previous</a>
-    <% } else { %>
-        <button class="btn btn-info" disabled>Previous</button>
-    <% } %>
-
-    <span>Page <%= currentPage %> of <%= totalPages %></span>
-
-    <% if (currentPage < totalPages) { %>
-        <a href="/admin/orderList?page=<%= currentPage + 1 %>" class="btn btn-info">Next</a>
-    <% } else { %>
-        <button class="btn btn-info" disabled>Next</button>
-    <% } %>
-</div>
-
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-<script  >   </script>
 
 <%- include('../layouts/admin_footer.ejs') %>

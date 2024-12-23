@@ -1,81 +1,123 @@
 <%- include("../layouts/user_header.ejs") %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Cart</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
-    <style>
-        .cart-container { padding: 20px; }
-        .cart-item { border-bottom: 1px solid #ddd; padding: 20px 0; }
-        .order-summary { border: 1px solid #ddd; padding: 20px; border-radius: 5px; }
-        .similar-products { padding-top: 20px; }
-    </style>
+
+<style>
+    
+    /* General container styles */
+    .cart-container {
+        padding: 20px;
+    }
+    .cart-item {
+        border-bottom: 1px solid #ddd;
+        padding: 20px 0;
+        display: flex;
+        align-items: center;
+    }
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Card styles for images */
+    .cart-item .card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+        height: 100px; /* Ensure consistent height */
+        width: 100px;  /* Square aspect ratio */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .cart-item .card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Maintain aspect ratio without distortion */
+    }
+
+    /* Product details */
+    .cart-item h6 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+    .cart-item p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    .cart-item .text-muted {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    .cart-item .details {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 15px;
+    }
+
+    /* Button actions */
+    .cart-item .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    .btn {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+</style>
+
+
+</style>
 </head>
+
+
 <body>
-
-<div class="container cart-container"">
-    <h1 class="mb-4">WishList</h1>
     
-    <!-- Cart Items Section -->
-    <!-- Cart Items Section -->
-<% if (product && product.length > 0) { %>
-    <% product.forEach(item => { %>
-        <div class="cart-item row align-items-center mb-3">
-            <div class="col-2">
-                <!-- Displaying the first image in product_image array -->
-                <img src="/newfile/<%= item.product.product_image[0] %>" alt="<%= item.product.product_name %>" class="img-fluid rounded">
-            </div>
-            <div class="col-3">
-                <h6 class="mb-0"><%= item.product.product_name %></h6>
-            </div>
-            <div class="col-2 text-center">
-                <span class="d-block text-muted">Regular Price:</span>
-                <h6 class="mb-0"><%= item.product.product_regular_price %></h6>
-            </div>
-            <div class="col-2 text-center">
-                <span class="d-block text-muted">Sales Price:</span>
-                <h6 class="mb-0"><%= item.product.product_sale_price %></h6>
-            </div>
-            <div class="col-3 text-end">
-                <form action="/remove_product/<%= item._id %>" method="post">
-                    <div>
-                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+<div style="background-color: thistle;">
+    <div class="container cart-container mt-3">
+        <h1 class="mb-4">WishList</h1>
+
+        <% if (product && product.length > 0) { %>
+            <% product.forEach(item => { %>
+                <div class="cart-item row align-items-center mb-3">
+                    <div class="col-2">
+                        <!-- Displaying the first image in product_image array inside a card -->
+                        <div class="card">
+                            <img src="/newfile/<%= item.product.product_image[0] %>" alt="<%= item.product.product_name %>" class="card-img">
+                        </div>
                     </div>
-                    <br>
-                </form>
-                    <div> 
-                            <form action="/move_to_cart/<%= item.product._id %>" method="get">
-                                <button> Add to cart</button>
+                    <div class="col-5 details">
+                        <h6><%= item.product.product_name %></h6>
+                        <p class="mb-1">
+                            <span class="text-muted">Regular Price:</span> ₹<%= item.product.product_regular_price %>
+                        </p>
+                        <p>
+                            <span class="text-muted">Sales Price:</span> ₹<%= item.product.product_sale_price %>
+                        </p>
+                    </div>
+                    <div class="col-5 text-end">
+                        <div class="actions">
+                            <form action="/remove_product/<%= item._id %>" method="post">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
                             </form>
+                            <form action="/move_to_cart/<%= item.product._id %>" method="get">
+                                <button class="btn btn-outline-success btn-sm">Add to Cart</button>
+                            </form>
+                        </div>
                     </div>
-            </div>
-        </div>
-    <% }); %>
-<% } else { %>
-    <p>Your WishList is empty.</p>
-<% } %>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>Your WishList is empty.</p>
+        <% } %>
 
-    
-
-    <!-- Order Summary Section -->
-    <!-- <div class="order-summary mt-4">
-        <h4>Order Summary</h4>
-        <p>Subtotal: $</p>
-        <p>Discount: $</p>
-        <h5>Total: $</h5>
-        <a href="/checkout" class="btn btn-primary btn-block mt-3">Proceed to Checkout</a>
-    </div> -->
-
-    <!-- Similar Products Section -->
-    <div class="similar-products mt-5">
-        <!-- <h4>You might also like</h4> -->
-        <!--  -->
     </div>
 </div>
 
 </body>
 </html>
+
 
 <%- include("../layouts/user_footer.ejs") %>

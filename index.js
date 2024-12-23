@@ -19,13 +19,13 @@ const admin_auth = require('./middleware/admin_auth')
 
 mongoose.connect(process.env.MONGO_URL)
 
-app.use(morgan('tiny'));
+// app.use(morgan('tiny'));
 
 
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
-app.use(flash());
+
 app.use(nocache())
 
 app.use(session({
@@ -33,6 +33,8 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+app.use(flash());
+
 
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');

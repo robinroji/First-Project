@@ -23,16 +23,15 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-  </style>
+</style>
+
 <section class="content-main">
     <div class="content-header">
         <div>
             <h2 class="content-title card-title">Dashboard </h2>
             <p>Whole data about your business here</p>
         </div>
-        <div>
-            <a href="#" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Create report</a>
-        </div>
+       
     </div>
     <div class="row">
         <div class="col-lg-3">
@@ -41,10 +40,8 @@
                     <span class="icon icon-sm rounded-circle bg-primary-light"><i class="text-primary material-icons md-monetization_on"></i></span>
                     <div class="text">
                         <h6 class="mb-1 card-title">Revenue</h6>
-                        <span><%=totalIncome%></span>
-                        <span class="text-sm">
-                            Shipping fees are not included
-                        </span>
+                        <span><%= totalIncome %></span>
+                        <span class="text-sm">Shipping fees are not included</span>
                     </div>
                 </article>
             </div>
@@ -54,10 +51,9 @@
                 <article class="icontext">
                     <span class="icon icon-sm rounded-circle bg-success-light"><i class="text-success material-icons md-local_shipping"></i></span>
                     <div class="text">
-                        <h6 class="mb-1 card-title">Orders</h6> <span><%=totalOrder %></span>
-                        <span class="text-sm">
-                            Excluding orders in transit
-                        </span>
+                        <h6 class="mb-1 card-title">Orders</h6> 
+                        <span><%= totalOrder %></span>
+                        <span class="text-sm">Excluding orders in transit</span>
                     </div>
                 </article>
             </div>
@@ -67,95 +63,201 @@
                 <article class="icontext">
                     <span class="icon icon-sm rounded-circle bg-warning-light"><i class="text-warning material-icons md-qr_code"></i></span>
                     <div class="text">
-                        <h6 class="mb-1 card-title">Products in stock </h6> <span><%=totalProducts %></span>
-                        <span class="text-sm">
-                            In 19 Categories
-                        </span>
+                        <h6 class="mb-1 card-title">Products in stock</h6> 
+                        <span><%= totalProducts %></span>
+                        <span class="text-sm">In 19 Categories</span>
                     </div>
                 </article>
             </div>
         </div>
-       
     </div>
+    
     <div class="row">
         <div class="col-xl-8 col-lg-12">
             <div class="card mb-4">
                 <article class="card-body">
-                    <h5 class="card-title">Sale statistics</h5>
-                    <canvas id="myChart" height="120px"></canvas>
-                </article>
-            </div>
-           
-        </div>
-        <div class="col-xl-4 col-lg-12">
-            <div class="card mb-4">
-                <article class="card-body">
-                    <h5 class="card-title">Revenue Base on Area</h5>
-                    <canvas id="myChart2" height="217"></canvas>
-                </article>
-            </div>
-            
-    </div>
+                    <h5 class="card-title">Sale Statistics</h5>
 
-    <body>
-        <!-- Best Products Table -->
-        <table>
-            <caption>Best Products</caption>
-            <thead>
-              <tr>
+                   <!-- Filter for Date Range -->
+<div>
+    <select id="dateFilter" class="form-control mb-3">
+        <option value="daily">Daily</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+        <option value="custom">Custom Range</option>
+    </select>
+</div>
+
+<!-- Custom Date Range Inputs -->
+<div id="customDateRange" class="d-none">
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" class="form-control mb-2" />
+
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate" class="form-control mb-3" />
+</div>
+
+
+                    <!-- Canvas for Sales Chart -->
+                    <canvas id="salesChart" height="120px"></canvas>
+                </article>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Best Products Table -->
+    <table>
+        <caption>Best Products</caption>
+        <thead>
+            <tr>
                 <th>No:</th>
                 <th>Product Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% topProducts.forEach((item, index) => { %>
+            </tr>
+        </thead>
+        <tbody>
+            <% topProducts.forEach((item, index) => { %>
                 <tr>
-                  <td><%= index + 1 %></td>
-                  <td><%= item %></td>
+                    <td><%= index + 1 %></td>
+                    <td><%= item %></td>
                 </tr>
-              <% }) %>
-            </tbody>
-          </table>
-          
-      
-        <!-- Best Categories Table -->
-        <table>
-            <caption>Best Products</caption>
-            <thead>
-              <tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <table>
+        <caption>Best Category </caption>
+        <thead>
+            <tr>
                 <th>No:</th>
                 <th>Product Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% topCategory.forEach((item, index) => { %>
+            </tr>
+        </thead>
+        <tbody>
+            <% topCategory.forEach((item, index) => { %>
                 <tr>
-                  <td><%= index + 1 %></td>
-                  <td><%= item %></td>
+                    <td><%= index + 1 %></td>
+                    <td><%= item %></td>
                 </tr>
-              <% }) %>
-            </tbody>
-          </table>
-      
-        <!-- Best Brands Table -->
-        <table>
-            <caption>Best Products</caption>
-            <thead>
-              <tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+
+    <table>
+        <caption>Best Brand</caption>
+        <thead>
+            <tr>
                 <th>No:</th>
                 <th>Product Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% topBrand.forEach((item, index) => { %>
+            </tr>
+        </thead>
+        <tbody>
+            <% topBrand.forEach((item, index) => { %>
                 <tr>
-                  <td><%= index + 1 %></td>
-                  <td><%= item %></td>
+                    <td><%= index + 1 %></td>
+                    <td><%= item %></td>
                 </tr>
-              <% }) %>
-            </tbody>
-          </table>
-   
-</section> 
-</main>    
+            <% }) %>
+        </tbody>
+    </table>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let mySalesChart;
+
+    document.getElementById('dateFilter').addEventListener('change', async function () {
+    const selectedFilter = this.value;
+
+    if (selectedFilter === 'custom') {
+        // If "Custom Range" is selected, display the date inputs
+        document.getElementById('customDateRange').classList.remove('d-none');
+    } else {
+        // Hide the custom date range inputs for other filters
+        document.getElementById('customDateRange').classList.add('d-none');
+
+        try {
+            // Fetch new data based on the selected filter (daily, monthly, yearly)
+            const data = await fetchChartData(selectedFilter);
+            updateCharts(data); // Update the charts with the new data
+        } catch (error) {
+            console.error('Error fetching chart data:', error);
+        }
+    }
+});
+
+// Event listener for custom date range submission
+document.getElementById('customDateRange').addEventListener('input', async function () {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (startDate && endDate) {
+        try {
+            // Fetch data for the custom date range
+            const data = await fetchChartData('custom', { startDate, endDate });
+            updateCharts(data); // Update the charts with the custom date range data
+        } catch (error) {
+            console.error('Error fetching custom date range data:', error);
+        }
+    }
+});
+
+
+const fetchChartData = async (filter, dateRange = {}) => {
+    let url = `/admin/getChartData?filter=${filter}`;
+    
+    if (filter === 'custom') {
+        url += `&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch chart data');
+    return response.json();
+};
+
+    
+    function updateCharts(data) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+
+        
+        if (mySalesChart) {
+            mySalesChart.destroy();
+        }
+
+        
+        mySalesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Sales Data',
+                    data: data.salesData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { display: true }
+                }
+            }
+        });
+    }
+
+    // Fetch initial data
+    (async function init() {
+        try {
+            const data = await fetchChartData('daily');
+            updateCharts(data);
+        } catch (error) {
+            console.error('Error initializing charts:', error);
+        }
+    })();
+</script>
+
 <%- include('../layouts/admin_footer') %>

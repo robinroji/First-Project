@@ -53,12 +53,15 @@ router.post('/delete/:id',admin_auth.isLogin,adminController.delete_Coupen)
 //******  Sales Report */
 
 router.get('/salesReport',admin_auth.isLogin,adminController.salesReport)
-router.get('/sales-report',admin_auth.isLogin,adminController.sales_report)
+router.get('/sales-report',admin_auth.isLogin,adminController.sales_report_filter)
 
 //**** download sales Report */
 
 router.get('/sales-report/download/pdf',admin_auth.isLogin,adminController.pdf)
 router.get('/sales-report/download/excel',admin_auth.isLogin,adminController.excel)
+
+//****** Chart data ****************/
+router.get('/getChartData',admin_auth.isLogin,adminController.chartData)
 
 
 
