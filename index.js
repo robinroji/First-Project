@@ -17,7 +17,9 @@ const product_route = require('./Routes/productRoute')
 
 const admin_auth = require('./middleware/admin_auth')
 
-mongoose.connect(process.env.MONGO_URL)
+mongoose.connect(process.env.MONGO_URL).then(()=>{
+  console.log('Connected to database')
+})
 
 // app.use(morgan('tiny'));
 
