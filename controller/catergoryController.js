@@ -137,7 +137,7 @@ const unblock_category = async(req,res)=>{
 
     } catch (error) {
         console.log(error.message);
-        
+        return res.redirect('/errorpage');
         
     }
 }
@@ -150,8 +150,7 @@ const loadOffer = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message)
-        res.redirect('/errorPage')
-
+        return res.redirect('/errorpage');
     }
 }
 const createOffer = async (req, res) => {
@@ -256,7 +255,8 @@ const createOffer = async (req, res) => {
 
     } catch (error) {
         console.log(error.message)
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        // return res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.redirect('/errorpage');
     }
   }
 
@@ -307,8 +307,7 @@ const createOffer = async (req, res) => {
         
     } catch (error) {
         console.log(error.message)
-        res.redirect('/errorPage')
-        
+        return res.redirect('/errorpage');        
     }
   }
 

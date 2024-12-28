@@ -23,6 +23,7 @@ try {
     
 } catch (error) {
     console.log(error.message);
+    return res.redirect('/errorpage');
     
     
 }
@@ -188,7 +189,8 @@ const loadOrderList = async (req, res) => {
 
     } catch (error) {
         console.log(error.message);
-        res.status(500).send('Server Error');
+        // res.status(500).send('Server Error');
+        return res.redirect('/errorpage');
     }
 };
 
@@ -210,6 +212,7 @@ const editOrder = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
         
     }
@@ -226,6 +229,7 @@ const deleteOrder = async (req,res)=>{
         
     } catch (error) {
         console.log(error.message); 
+        return res.redirect('/errorpage');
     }
 }
 
@@ -244,6 +248,7 @@ const updateStatus = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message,"uuupdate");
+        return res.redirect('/errorpage');
         
         
     }

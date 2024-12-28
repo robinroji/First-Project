@@ -51,7 +51,8 @@ console.log(img)
 
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ success: false, message: 'An error occurred while adding the product.' });
+        // res.status(500).json({ success: false, message: 'An error occurred while adding the product.' });
+        return res.redirect('/errorpage');
     }
 };
 
@@ -68,8 +69,8 @@ const load_product = async(req,res)=>{
             
     } 
     catch (error) {
-        res.redirect('/errorpage')
         console.log(error.message);
+        res.redirect('/errorpage')
         
         
     }
@@ -98,8 +99,8 @@ const productPage = async(req,res)=>{
     } 
 
     catch (error) {
-        res.redirect('/errorpage')
         console.log(error.message);
+        res.redirect('/errorpage')
         
         
     }
@@ -265,8 +266,9 @@ const img_delete = async (req, res) => {
             console.log(OldPath)
         fs.unlinkSync(OldPath)
         } catch (error) {
-            console.log(error);    
-            return res.status(400).json({success:false,message:'image deleted error'})
+            console.log(error.message);    
+            // return res.status(400).json({success:false,message:'image deleted error'})
+            return res.redirect('/errorpage');
         }
 
   
@@ -280,8 +282,9 @@ const img_delete = async (req, res) => {
     return res.status(200).json({success:true, message:'image deleted'})
     
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({success:false,message:'Internal server Error'})
+        console.log(error.message);
+        // return res.status(500).json({success:false,message:'Internal server Error'})
+        return res.redirect('/errorpage');
     }
     
 

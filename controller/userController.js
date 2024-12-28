@@ -82,7 +82,7 @@ const verifMail = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
-        
+        return res.redirect('/errorpage');        
         
     }
 }
@@ -96,6 +96,7 @@ const   securePassword = async(password)=>{
         
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage')
     }
 }
 
@@ -110,7 +111,8 @@ const loadRegister = async(req,res)=>{
         
     } catch (error) {
         console.log('error in the rendering');
-        console.log(error.message);      
+        console.log(error.message);    
+        return res.redirect('/errorpage');  
     }
 }
 
@@ -158,6 +160,7 @@ const userRegister = async(req,res)=>{
         console.log('error found while user registering');
 
         console.log(error.message);
+        return res.redirect('/errorpage');
         
     }
 }
@@ -182,8 +185,7 @@ otp_verify = async(req,res)=>{
         
     } catch (error) {
         console.log('error occured while passing otp',error.message);
-        res.render('errorpage')
-    }
+        return res.redirect('/errorpage');    }
 
 }
 
@@ -232,6 +234,7 @@ const user_login = async (req,res)=>{
 
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
     }
 }
 
@@ -295,6 +298,7 @@ const post_otp = async (req, res) => {
         
         console.log(error);
         res.render('otp', { message: 'An error occurred. Please try again.', userId: req.body.id });
+        return res.redirect('/errorpage');
     }
 }
 
@@ -308,6 +312,7 @@ const get_login = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
         
     }
@@ -360,8 +365,7 @@ const get_resend_otp = async(req,res)=>{
         
     } catch (error) {
         console.log('error occured while passing otp',error.message);
-        res.render('errorpage')
-    }
+        return res.redirect('/errorpage');    }
 
 }
 
@@ -816,8 +820,7 @@ loadCheckout = async (req, res) => {
         
     } catch (error) {
         console.log('Error:', error.message);
-        res.status(500).send('An error occurred while loading the checkout page.');
-    }
+        return res.redirect('/errorpage');    }
 };
 
 
@@ -869,9 +872,11 @@ const load_Editaddress = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);      
+        return res.redirect('/errorpage');
     }
 }
 
+//********************* */
 const edit_Editaddress = async (req,res)=>{
     console.log('entered into the edit edit address');
     
@@ -894,6 +899,7 @@ const edit_Editaddress = async (req,res)=>{
         
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
         
     }
@@ -920,6 +926,7 @@ const select_address = async(req,res)=>{
 
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
         
     }
@@ -936,6 +943,7 @@ const payment = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
     }
 }
@@ -1080,6 +1088,7 @@ const loadOrders = async (req, res) => {
         });
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
     }
 };
 
@@ -1096,6 +1105,7 @@ const OrderDetailPage = async(req,res)=>{
         res.render('OrderDetailPage',{order,orderAddress})
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
         
     }
@@ -1138,7 +1148,7 @@ const deleteOrder = async (req, res) => {
          })
 
         const addQuantity = await Product.findOne({_id:orderId.items[0].product})
-        console.log('the prooooooooooooooooooooooooodddddddddddddduuuuuuuuuuuuuuucccccccccccccctttttttttt is',addQuantity)
+        // console.log('the prooooooooooooooooooooooooodddddddddddddduuuuuuuuuuuuuuucccccccccccccctttttttttt is',addQuantity)
         const orderData = await Order.findOne({ _id: req.params.id });
 
         if(!cod){
@@ -1191,7 +1201,8 @@ if (existingUser) {
         return res.redirect('/orders');
     } catch (error) {
         console.error(error.message);
-        res.status(500).send('Internal Server Error');
+        // res.status(500).send('Internal Server Error');
+        return res.redirect('/errorpage');
     }
 };
 
@@ -1292,7 +1303,8 @@ console.log('the amount is ',amount)
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Server Error");
+    // res.status(500).send("Server Error");
+    return res.redirect('/errorpage');
   }
 };
 
@@ -1799,6 +1811,7 @@ const retryCheckout = async(req,res)=>{
         res.render('retryCheckout',{wallet})
     } catch (error) {
         console.log(error.message)
+        return res.redirect('/errorpage');
         
     }
 }
@@ -1880,7 +1893,8 @@ const checkOut2 = async (req, res) => {
         });
     } catch (error) {
         console.error('Error:', error.message);
-        res.status(500).send('An error occurred while loading the checkout page.');
+        // res.status(500).send('An error occurred while loading the checkout page.');
+        return res.redirect('/errorpage');
     }
 };
 

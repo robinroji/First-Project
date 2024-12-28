@@ -189,6 +189,7 @@ const   delete_product = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
         
     }
@@ -261,6 +262,7 @@ const qt_increase = async (req,res)=>{
 
     } catch (error) {
         console.log(error.message);
+        return res.redirect('/errorpage');
         
     }
 }
