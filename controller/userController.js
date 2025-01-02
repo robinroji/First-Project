@@ -854,6 +854,7 @@ loadCheckout = async (req, res) => {
         }else{
             cart.totalSalesPrice=0;
             cart.totalRegularPrice=0
+            
         }
 
         if (!cart) {
@@ -867,6 +868,7 @@ loadCheckout = async (req, res) => {
         // console.log('the coupens is ',coupen)
        
         let  temp =0
+    
         
         // Pass the cartIt object to the EJS view
 
