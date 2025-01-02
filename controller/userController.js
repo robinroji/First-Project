@@ -792,7 +792,47 @@ loadCheckout = async (req, res) => {
             })
             await wallet.save();
 
+            
+        // Fetch cart items for the logged-in user
+
+        console.log('the total sales price is ',cart.totalSalesPrice)
+        const userCart = await Cart.findById(userId)
         
+
+        const onlyItems = await Cart.findOne({user:userId})
+        // console.log('onlyitems is ',onlyItems);
+        
+        const userAddress = await User.findById(userId).populate('address');
+        // console.log('the address find is ',userAddress);
+        
+        if(cart&&cart.items.length>0){
+            cart.totalSalesPrice = cart.items.reduce((total, item) => total +  item.totalPrice * item.quantity, 0);
+         cart.totalRegularPrice = cart.items.reduce((total, item) => total + item.product.product_regular_price * item.quantity, 0);
+            
+        }else{
+            cart.totalSalesPrice=0;
+            cart.totalRegularPrice=0
+        }
+
+        if (!cart) {
+            throw new Error('Cart not found for this user');
+        }
+
+        // console.log('Cart items issss:', cart);
+
+        
+        const coupen = await Coupen.find()
+        // console.log('the coupens is ',coupen)
+       
+        let  temp =0
+        
+        // Pass the cartIt object to the EJS view
+
+        console.log('the finding balance is ',wallet)
+     
+        return  res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp,wallet}, );
+
+        }
         
 
         // Fetch cart items for the logged-in user
@@ -833,7 +873,7 @@ loadCheckout = async (req, res) => {
         console.log('the finding balance is ',wallet)
      
         res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp,wallet}, );
-    }
+      
     } catch (error) {
         console.log('Error:', error.message);
         return res.redirect('/errorpage');    }
