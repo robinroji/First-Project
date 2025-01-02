@@ -872,7 +872,7 @@ loadCheckout = async (req, res) => {
         
         // Pass the cartIt object to the EJS view
 
-        console.log('the finding balance is ',wallet)
+        console.log('finding balance is ',wallet)
      
         res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp,wallet}, );
       
