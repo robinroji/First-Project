@@ -8,7 +8,7 @@ require('dotenv').config()  //do we need this ????????? i have alredy return thi
 passport.use(new GoogleStrategy({
         clientID      : process.env.GOOGLE_CLIENT_ID,
         clientSecret  : process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL   : 'http://localhost:3000/auth/google/callback' ,
+        callbackURL   : `${process.env.NODE_ENV==='production'?process.env.PROD_DOMAIN:process.env.DEV_DOMAIN}/auth/google/callback` ,
     },
 
     async(accessToken,refreshhToken,profile,done)=>{
