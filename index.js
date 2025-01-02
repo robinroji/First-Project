@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URL).then(()=>{
   console.log('Connected to database')
 })
 
-// app.use(morgan('tiny'));
+app.use(morgan('tiny'));
 
 
 
@@ -29,14 +29,12 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 
 app.use(nocache())
-
 app.use(session({
   secret: 'your_secret_key',
   resave: false,
   saveUninitialized: true
 }));
 app.use(flash());
-
 
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');

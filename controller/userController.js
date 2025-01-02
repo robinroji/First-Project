@@ -782,6 +782,19 @@ loadCheckout = async (req, res) => {
        
         const wallet = await Wallet.findOne({user:req.session.user_id})
 
+        if(!wallet){
+
+           const wallet = new Wallet({
+
+                user: req.session.user_id,
+                balance: 0
+
+            })
+            await wallet.save();
+
+        }
+        
+
         // Fetch cart items for the logged-in user
 
         console.log('the total sales price is ',cart.totalSalesPrice)
@@ -816,8 +829,9 @@ loadCheckout = async (req, res) => {
         let  temp =0
         
         // Pass the cartIt object to the EJS view
+     
         res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp,wallet}, );
-        
+      
     } catch (error) {
         console.log('Error:', error.message);
         return res.redirect('/errorpage');    }

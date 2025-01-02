@@ -32,7 +32,7 @@ user_route.use(pasport.session())
 user_route.set('view engine','ejs');
 user_route.set('views','./views/users');
 
-24
+
 //**user register**/
 user_route.get('/register',auth.isLogout, userController.loadRegister)
 user_route.post('/register',userController.userRegister)
