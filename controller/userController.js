@@ -792,7 +792,7 @@ loadCheckout = async (req, res) => {
             })
             await wallet.save();
 
-        }
+        
         
 
         // Fetch cart items for the logged-in user
@@ -829,9 +829,11 @@ loadCheckout = async (req, res) => {
         let  temp =0
         
         // Pass the cartIt object to the EJS view
+
+        console.log('the finding balance is ',wallet)
      
         res.render('checkoutPage',{ cart,userAddress:userAddress.address,onlyItems,userCart,coupen,temp,wallet}, );
-      
+    }
     } catch (error) {
         console.log('Error:', error.message);
         return res.redirect('/errorpage');    }
