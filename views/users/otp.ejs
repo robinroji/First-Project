@@ -74,7 +74,7 @@
           <input type="hidden" name="id" value="<%= userId %>">
           <button id="resendButton" type="submit" class="resend-btn">Resend OTP</button>
       </form>
-      <p>Resend OTP in <span id="timer">20 seconds</span></p>
+      <p>Resend OTP <span id="timer"></span></p>
       <% if (typeof message !== 'undefined') { %>
         <p style="color:green;"><%= message %></p>
     <% } %>
@@ -103,23 +103,36 @@
           return true;
       }
   
-    //   window.onload = function () {
-    //       var timerDisplay = document.getElementById('timer');
-    //       var resendButton = document.getElementById('resendButton');
-    //       resendButton.disabled = true;
-    //       var timer = 10;
-  
-    //       var interval = setInterval(function () {
-    //           timer--;
-    //           timerDisplay.textContent = timer + " seconds";
-  
-    //           if (timer <= 0) {
-    //               clearInterval(interval);
-    //               resendButton.disabled = false;
-    //               timerDisplay.textContent = "You can resend the OTP now.";
-    //           }
-    //       }, 1000);
-    //   };
+      window.onload = function () {
+    var timerDisplay = document.getElementById('timer');
+    var resendButton = document.getElementById('resendButton');
+
+    // Disable the button initially
+    resendButton.disabled = true;
+
+    // Add an event listener to prevent unintended actions when disabled
+    resendButton.addEventListener('click', function () {
+        if (resendButton.disabled) {
+            return; // Prevent execution if the button is disabled
+        }
+        console.log("Resend button clicked");
+        // Add your resend logic here
+    });
+
+    var timer = 10;
+
+    var interval = setInterval(function () {
+        timer--;
+        timerDisplay.textContent = timer + " seconds";
+
+        if (timer <= 0) {
+            clearInterval(interval);
+            resendButton.disabled = false; // Enable the button
+            timerDisplay.textContent = "You can resend the OTP now.";
+        }
+    }, 1000);
+};
+
   </script>
   </body>
   </html>

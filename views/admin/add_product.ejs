@@ -524,12 +524,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Validate Images
         const productImages = document.getElementById('productImages');
-        if (productImages.files.length > 3) {
+
+// Check if more than 3 files are selected
+if (productImages.files.length > 3) {
+    productImages.classList.add('is-invalid');
+    isValid = false;
+} else {
+    // Validate file types
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    for (let i = 0; i < productImages.files.length; i++) {
+        if (!validImageTypes.includes(productImages.files[i].type)) {
             productImages.classList.add('is-invalid');
             isValid = false;
-        } else {
-            productImages.classList.remove('is-invalid');
+            break; // Exit loop on invalid file
         }
+    }
+
+    // Remove the invalid class if all files are valid
+    if (isValid) {
+        productImages.classList.remove('is-invalid');
+    }
+}
+
 
         // Prevent form submission if validation fails
         if (!isValid) {
